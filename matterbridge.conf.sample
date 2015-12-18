@@ -1,0 +1,20 @@
+[IRC]
+server="irc.freenode.net"
+port=6667
+UseTLS=false
+SkipTLSVerify=true
+nick="matterbot"
+channel="#matterbridge"
+
+[mattermost]
+server="yourmattermostserver.domain"
+team="yourteam"
+#login/pass of your bot
+login="yourlogin"
+password="yourpass"
+showjoinpart=true
+channel="thechannel"
+#token=yourtokenfrommattermost
+
+[general]
+GiphyAPIKey=dc6zaTOxFJmzC

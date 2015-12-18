@@ -1,12 +1,15 @@
 # matterbridge-plus
 
-Simple bridge between mattermost and IRC. Uses the mattermost API
+Simple bridge between mattermost and IRC. (Uses the mattermost API instead of webhooks)
+
 Relays public channel messages between mattermost and IRC.  
 
 Requires mattermost 1.2.0+ and a dedicated user(bot) on your mattermost instance.
 Matterbridge-plus also works with private groups.
 
 There is also a version with webhooks that doesn't need a dedicated user. See [matterbridge] (https://github.com/42wim/matterbridge/)
+
+NOT STABLE: STILL WORK IN PROGRESS
 
 ## binaries
 Binaries will be found [here] (https://github.com/42wim/matterbridge-plus/releases/tag/v0.1)

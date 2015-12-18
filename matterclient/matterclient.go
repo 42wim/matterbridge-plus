@@ -40,7 +40,7 @@ type MMClient struct {
 	//Team         *model.Team
 }
 
-func NewMMClient(login, pass, team, server string) *MMClient {
+func New(login, pass, team, server string) *MMClient {
 	cred := &Credentials{Login: login, Pass: pass, Team: team, Server: server}
 	mmclient := &MMClient{Credentials: cred, MessageChan: make(chan *Message, 100)}
 	return mmclient

@@ -20,12 +20,12 @@ type Credentials struct {
 }
 
 type Message struct {
-	Raw     *model.Message
-	Post    *model.Post
-	Team    string
-	Channel string
-	User    string
-	Text    string
+	Raw      *model.Message
+	Post     *model.Post
+	Team     string
+	Channel  string
+	Username string
+	Text     string
 }
 
 type MMClient struct {
@@ -145,7 +145,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	if m.Users[data.UserId] == nil {
 		m.updateUsers()
 	}
-	rmsg.User = m.Users[data.UserId].Username
+	rmsg.Username = m.Users[data.UserId].Username
 	rmsg.Channel = m.getChannelName(data.ChannelId)
 	// direct message
 	if strings.Contains(rmsg.Channel, "__") {

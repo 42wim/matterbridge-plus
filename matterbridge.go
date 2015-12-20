@@ -13,14 +13,24 @@ import (
 )
 
 type Bridge struct {
-	i *irc.Connection
-	m *matterclient.MMClient
+	i      *irc.Connection
+	m      *matterclient.MMClient
+	ircMap map[string]string
+	mmMap  map[string]string
 	*Config
 }
 
 func NewBridge(name string, config *Config) *Bridge {
 	b := &Bridge{}
 	b.Config = config
+	b.ircMap = make(map[string]string)
+	b.mmMap = make(map[string]string)
+	if len(b.Config.Channel) > 0 {
+		for _, val := range b.Config.Channel {
+			b.ircMap[val.IRC] = val.Mattermost
+			b.mmMap[val.Mattermost] = val.IRC
+		}
+	}
 	b.m = matterclient.New(b.Config.Mattermost.Login, b.Config.Mattermost.Password,
 		b.Config.Mattermost.Team, b.Config.Mattermost.Server)
 	err := b.m.Login()
@@ -42,13 +52,17 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 	time.Sleep(time.Second)
 	log.Println("Joining", b.Config.IRC.Channel, "as", b.Config.IRC.Nick)
 	i.Join(b.Config.IRC.Channel)
+	for _, val := range b.Config.Channel {
+		log.Println("Joining", val.IRC, "as", b.Config.IRC.Nick)
+		i.Join(val.IRC)
+	}
 	i.AddCallback("PRIVMSG", b.handlePrivMsg)
 	i.AddCallback("CTCP_ACTION", b.handlePrivMsg)
 	if b.Config.Mattermost.ShowJoinPart {
 		i.AddCallback("JOIN", b.handleJoinPart)
 		i.AddCallback("PART", b.handleJoinPart)
 	}
-	i.AddCallback("353", b.handleOther)
+	//	i.AddCallback("353", b.handleOther)
 	return i
 }
 
@@ -58,46 +72,44 @@ func (b *Bridge) handlePrivMsg(event *irc.Event) {
 		msg = event.Nick + " "
 	}
 	msg += event.Message()
-	b.Send("irc-"+event.Nick, msg)
+	b.Send("irc-"+event.Nick, msg, b.getMMChannel(event.Arguments[0]))
 }
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
-	b.SendType(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), "join_leave")
+	b.Send(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {
 	switch event.Code {
 	case "353":
-		b.Send(b.Config.IRC.Nick, event.Message()+" currently on IRC")
+		b.Send(b.Config.IRC.Nick, event.Message()+" currently on IRC", b.getMMChannel(event.Arguments[0]))
 	}
 }
 
-func (b *Bridge) Send(nick string, message string) error {
-	return b.SendType(nick, message, "")
+func (b *Bridge) Send(nick string, message string, channel string) error {
+	return b.SendType(nick, message, channel, "")
 }
 
-func (b *Bridge) SendType(nick string, message string, mtype string) error {
-	b.m.PostMessage(b.Config.Mattermost.Channel, message)
+func (b *Bridge) SendType(nick string, message string, channel string, mtype string) error {
+	b.m.PostMessage(channel, message)
 	return nil
 }
 
 func (b *Bridge) handleMatter() {
 	for message := range b.m.MessageChan {
 		if message.Raw.Action == "posted" {
-			if message.Channel == b.Config.Mattermost.Channel {
-				cmd := strings.Fields(message.Text)[0]
-				switch cmd {
-				case "!users":
-					log.Println("received !users from", message.User)
-					b.i.SendRaw("NAMES " + b.Config.IRC.Channel)
-				case "!gif":
-					message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
-					b.Send(b.Config.IRC.Nick, message.Text)
-				}
-				texts := strings.Split(message.Text, "\n")
-				for _, text := range texts {
-					b.i.Privmsg(b.Config.IRC.Channel, message.User+": "+text)
-				}
+			cmd := strings.Fields(message.Text)[0]
+			switch cmd {
+			case "!users":
+				log.Println("received !users from", message.Username)
+				b.i.SendRaw("NAMES " + b.getIRCChannel(message.Channel))
+			case "!gif":
+				message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
+				b.Send(b.Config.IRC.Nick, message.Text, b.getIRCChannel(message.Channel))
+			}
+			texts := strings.Split(message.Text, "\n")
+			for _, text := range texts {
+				b.i.Privmsg(b.getIRCChannel(message.Channel), message.Username+": "+text)
 			}
 		}
 	}
@@ -113,6 +125,22 @@ func (b *Bridge) giphyRandom(query []string) string {
 		return "error"
 	}
 	return res.Data.FixedHeightDownsampledURL
+}
+
+func (b *Bridge) getMMChannel(ircChannel string) string {
+	mmchannel, ok := b.ircMap[ircChannel]
+	if !ok {
+		mmchannel = b.Config.Mattermost.Channel
+	}
+	return mmchannel
+}
+
+func (b *Bridge) getIRCChannel(mmChannel string) string {
+	ircchannel, ok := b.mmMap[mmChannel]
+	if !ok {
+		ircchannel = b.Config.IRC.Channel
+	}
+	return ircchannel
 }
 
 func main() {

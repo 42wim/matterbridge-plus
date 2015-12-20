@@ -18,3 +18,12 @@ channel="thechannel"
 
 [general]
 GiphyAPIKey=dc6zaTOxFJmzC
+
+#multiple channel config
+[channel "our testing channel"]
+irc="#bottesting"
+mattermost="testing"
+
+[channel "random channel"]
+irc="#random"
+mattermost="random"

@@ -23,6 +23,10 @@ type Config struct {
 		Channel      string
 		ShowJoinPart bool
 	}
+	Channel map[string]*struct {
+		IRC        string
+		Mattermost string
+	}
 	General struct {
 		GiphyAPIKey string
 	}

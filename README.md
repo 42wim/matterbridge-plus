@@ -2,7 +2,8 @@
 
 Simple bridge between mattermost and IRC. (Uses the mattermost API instead of webhooks)
 
-Relays public channel messages between mattermost and IRC.  
+Relays public channel messages between mattermost and IRC.
+Supports multiple mattermost and irc channels.
 
 Requires mattermost 1.2.0+ and a dedicated user(bot) on your mattermost instance.
 Matterbridge-plus also works with private groups.
@@ -33,6 +34,11 @@ matterbridge-plus
 1) Copy the matterbridge.conf.sample to matterbridge.conf in the same directory as the matterbridge binary.  
 2) Edit matterbridge.conf with the settings for your environment. See below for more config information.  
 3) Now you can run matterbridge-plus.
+
+```
+Usage of matterbridge-plus:
+  -conf="matterbridge.conf": config file
+```
 
 Matterbridge will:
 * connect to specified irc server and channel.
@@ -66,4 +72,13 @@ channel="thechannel"
 [general]
 #request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key
 GiphyApiKey="dc6zaTOxFJmzC"
+
+#multiple channel config
+[channel "our testing channel"]
+irc="#bottesting"
+mattermost="testing"
+
+[channel "random channel"]
+irc="#random"
+mattermost="random"
 ```

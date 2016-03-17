@@ -48,8 +48,11 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 	i := irc.IRC(b.Config.IRC.Nick, b.Config.IRC.Nick)
 	i.UseTLS = b.Config.IRC.UseTLS
 	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.IRC.SkipTLSVerify}
-	i.Connect(b.Config.IRC.Server + ":" + strconv.Itoa(b.Config.IRC.Port))
-	time.Sleep(time.Second)
+	err := i.Connect(b.Config.IRC.Server + ":" + strconv.Itoa(b.Config.IRC.Port))
+	if err != nil {
+		log.Println(err)
+	}
+	time.Sleep(time.Second * 10)
 	log.Println("Joining", b.Config.IRC.Channel, "as", b.Config.IRC.Nick)
 	i.Join(b.Config.IRC.Channel)
 	for _, val := range b.Config.Channel {

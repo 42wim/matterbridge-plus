@@ -37,7 +37,7 @@ type MMClient struct {
 	User         *model.User
 	Users        map[string]*model.User
 	MessageChan  chan *Message
-	//Team         *model.Team
+	Team         *model.Team
 }
 
 func New(login, pass, team, server string) *MMClient {
@@ -74,10 +74,8 @@ func (m *MMClient) Login() error {
 	// reset timer
 	b.Reset()
 	m.User = myinfo.Data.(*model.User)
-	/*
-		myinfo, _ = MmClient.GetMyTeam("")
-		u.MmTeam = myinfo.Data.(*model.Team)
-	*/
+	myinfo, _ = m.Client.GetMyTeam("")
+	m.Team = myinfo.Data.(*model.Team)
 
 	// setup websocket connection
 	wsurl := "wss://" + m.Credentials.Server + "/api/v1/websocket"
@@ -101,10 +99,10 @@ func (m *MMClient) Login() error {
 	m.WsClient = WsClient
 
 	// populating users
-	m.updateUsers()
+	m.UpdateUsers()
 
 	// populating channels
-	m.updateChannels()
+	m.UpdateChannels()
 
 	return nil
 }
@@ -118,7 +116,7 @@ func (m *MMClient) WsReceiver() {
 			m.Login()
 		}
 		//log.Printf("WsReceiver: %#v", rmsg)
-		msg := &Message{Raw: &rmsg, Team: m.Team}
+		msg := &Message{Raw: &rmsg, Team: m.Credentials.Team}
 		m.parseMessage(msg)
 		m.MessageChan <- msg
 	}
@@ -143,10 +141,10 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	//	log.Println("receiving userid", data.UserId)
 	// we don't have the user, refresh the userlist
 	if m.Users[data.UserId] == nil {
-		m.updateUsers()
+		m.UpdateUsers()
 	}
 	rmsg.Username = m.Users[data.UserId].Username
-	rmsg.Channel = m.getChannelName(data.ChannelId)
+	rmsg.Channel = m.GetChannelName(data.ChannelId)
 	// direct message
 	if strings.Contains(rmsg.Channel, "__") {
 		//log.Println("direct message")
@@ -162,13 +160,13 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	return
 }
 
-func (m *MMClient) updateUsers() error {
+func (m *MMClient) UpdateUsers() error {
 	mmusers, _ := m.Client.GetProfiles(m.User.TeamId, "")
 	m.Users = mmusers.Data.(map[string]*model.User)
 	return nil
 }
 
-func (m *MMClient) updateChannels() error {
+func (m *MMClient) UpdateChannels() error {
 	mmchannels, _ := m.Client.GetChannels("")
 	m.Channels = mmchannels.Data.(*model.ChannelList)
 	mmchannels, _ = m.Client.GetMoreChannels("")
@@ -176,14 +174,14 @@ func (m *MMClient) updateChannels() error {
 	return nil
 }
 
-func (m *MMClient) getChannelName(id string) string {
+func (m *MMClient) GetChannelName(id string) string {
 	for _, channel := range append(m.Channels.Channels, m.MoreChannels.Channels...) {
 		if channel.Id == id {
 			return channel.Name
 		}
 	}
 	// not found? could be a new direct message from mattermost. Try to update and check again
-	m.updateChannels()
+	m.UpdateChannels()
 	for _, channel := range append(m.Channels.Channels, m.MoreChannels.Channels...) {
 		if channel.Id == id {
 			return channel.Name
@@ -192,7 +190,7 @@ func (m *MMClient) getChannelName(id string) string {
 	return ""
 }
 
-func (m *MMClient) getChannelId(name string) string {
+func (m *MMClient) GetChannelId(name string) string {
 	for _, channel := range append(m.Channels.Channels, m.MoreChannels.Channels...) {
 		if channel.Name == name {
 			return channel.Id
@@ -201,7 +199,71 @@ func (m *MMClient) getChannelId(name string) string {
 	return ""
 }
 
+func (m *MMClient) GetChannelHeader(id string) string {
+	for _, channel := range append(m.Channels.Channels, m.MoreChannels.Channels...) {
+		if channel.Id == id {
+			return channel.Header
+		}
+	}
+	return ""
+}
+
 func (m *MMClient) PostMessage(channel string, text string) {
-	post := &model.Post{ChannelId: m.getChannelId(channel), Message: text}
+	post := &model.Post{ChannelId: m.GetChannelId(channel), Message: text}
 	m.Client.CreatePost(post)
+}
+
+func (m *MMClient) JoinChannel(channel string) error {
+	if m.GetChannelId(strings.Replace(channel, "#", "", 1)) == "" {
+		return errors.New("failed to join")
+	}
+	_, err := m.Client.JoinChannel(m.GetChannelId(strings.Replace(channel, "#", "", 1)))
+	if err != nil {
+		return errors.New("failed to join")
+	}
+	//	m.SyncChannel(m.getMMChannelId(strings.Replace(channel, "#", "", 1)), strings.Replace(channel, "#", "", 1))
+	return nil
+}
+
+func (m *MMClient) GetPostsSince(channelId string, time int64) *model.PostList {
+	res, err := m.Client.GetPostsSince(channelId, time)
+	if err != nil {
+		return nil
+	}
+	return res.Data.(*model.PostList)
+}
+
+func (m *MMClient) SearchPosts(query string) *model.PostList {
+	res, err := m.Client.SearchPosts(query)
+	if err != nil {
+		return nil
+	}
+	return res.Data.(*model.PostList)
+}
+
+func (m *MMClient) GetPosts(channelId string, limit int) *model.PostList {
+	res, err := m.Client.GetPosts(channelId, 0, limit, "")
+	if err != nil {
+		return nil
+	}
+	return res.Data.(*model.PostList)
+}
+
+func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
+	data := make(map[string]string)
+	data["channel_id"] = channelId
+	data["channel_header"] = header
+	log.Printf("updating channelheader %#v, %#v", channelId, header)
+	_, err := m.Client.UpdateChannelHeader(data)
+	if err != nil {
+		log.Print(err)
+	}
+}
+
+func (m *MMClient) UpdateLastViewed(channelId string) {
+	log.Printf("posting lastview %#v", channelId)
+	_, err := m.Client.UpdateLastViewedAt(channelId)
+	if err != nil {
+		log.Print(err)
+	}
 }

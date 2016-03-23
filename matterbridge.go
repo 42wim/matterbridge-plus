@@ -18,6 +18,6 @@ func main() {
 		log.Info("enabling debug")
 		log.SetLevel(log.DebugLevel)
 	}
-	bridge.NewBridge("matterbot", bridge.NewConfig(*flagConfig), "legacy")
+	bridge.NewBridge("matterbot", bridge.NewConfig(*flagConfig), "")
 	select {}
 }

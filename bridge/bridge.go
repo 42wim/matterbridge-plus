@@ -152,8 +152,8 @@ func (b *Bridge) handleOther(event *irc.Event) {
 	case "001":
 		b.handleNewConnection(event)
 	case "353":
-		log.Debug("handleOther ", b.getMMChannel(event.Arguments[0]))
-		b.Send(b.ircNick, b.formatnicks(event.Message()), b.getMMChannel(event.Arguments[0]))
+		log.Debug("handleOther ", b.getMMChannel(event.Arguments[2]))
+		b.Send(b.ircNick, b.formatnicks(event.Message()), b.getMMChannel(event.Arguments[2]))
 	case "NOTICE":
 		b.handleNotice(event)
 	default:
@@ -188,6 +188,7 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 		}
 		return nil
 	}
+	log.Debug("->mattermost channel: ", channel, " ", message)
 	b.mc.PostMessage(channel, message)
 	return nil
 }
@@ -210,6 +211,7 @@ func (b *Bridge) handleMatterClient(mchan chan *MMMessage) {
 			m.Username = message.Username
 			m.Channel = message.Channel
 			m.Text = message.Text
+			log.Debug("<-mattermost channel: ", message.Channel, " ", message)
 			mchan <- m
 		}
 	}

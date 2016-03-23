@@ -9,6 +9,7 @@ import (
 	"github.com/thoj/go-ircevent"
 	"strconv"
 	"strings"
+	"sort"
 )
 
 //type Bridge struct {
@@ -40,6 +41,7 @@ type Bridge struct {
 	*Config
 	ircMap map[string]string
 	kind   string
+	names  []string
 }
 
 func NewBridge(name string, config *Config, kind string) *Bridge {
@@ -139,7 +141,7 @@ func (b *Bridge) handleNotice(event *irc.Event) {
 	}
 }
 
-func (b *Bridge) formatnicks(nicks string) string {
+func (b *Bridge) formatnicks(nicks []string) string {
 	switch b.Config.Mattermost.NickFormatter {
 	case "table":
 		return tableformatter(nicks, b.Config.Mattermost.NicksPerRow)
@@ -148,13 +150,24 @@ func (b *Bridge) formatnicks(nicks string) string {
 	}
 }
 
+func (b *Bridge) storeNames(event *irc.Event) {
+       b.names = append(b.names, strings.Split(event.Message(), " ")...)
+}
+
+func (b *Bridge) endNames(event *irc.Event) {
+       sort.Strings(b.names)
+       b.Send(b.ircNick, b.formatnicks(b.names), b.getMMChannel(event.Arguments[0]))
+       b.names = nil
+}
+
 func (b *Bridge) handleOther(event *irc.Event) {
 	switch event.Code {
 	case "001":
 		b.handleNewConnection(event)
+	case "366":
+		b.endNames(event)
 	case "353":
-		log.Debug("handleOther ", b.getMMChannel(event.Arguments[0]))
-		b.Send(b.ircNick, b.formatnicks(event.Message()), b.getMMChannel(event.Arguments[0]))
+		b.storeNames(event)
 	case "NOTICE":
 		b.handleNotice(event)
 	default:
@@ -242,6 +255,7 @@ func (b *Bridge) handleMatter() {
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
+			log.Debug("Sending message from " + message.Username + " to " + message.Channel)
 			b.i.Privmsg(b.getIRCChannel(message.Channel), username+text)
 		}
 	}

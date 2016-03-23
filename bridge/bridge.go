@@ -206,12 +206,13 @@ func (b *Bridge) handleMatterHook(mchan chan *MMMessage) {
 
 func (b *Bridge) handleMatterClient(mchan chan *MMMessage) {
 	for message := range b.mc.MessageChan {
-		if message.Raw.Action == "posted" {
+		// do not post our own messages back to irc
+		if message.Raw.Action == "posted" && b.mc.User.Username != message.Username {
 			m := &MMMessage{}
 			m.Username = message.Username
 			m.Channel = message.Channel
 			m.Text = message.Text
-			log.Debug("<-mattermost channel: ", message.Channel, " ", message)
+			log.Debugf("<-mattermost channel: %s %#v %#v", message.Channel, message.Post, message.Raw)
 			mchan <- m
 		}
 	}

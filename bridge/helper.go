@@ -4,8 +4,7 @@ import (
 	"strings"
 )
 
-func tableformatter(nicks_s string, nicksPerRow int) string {
-	nicks := strings.Split(nicks_s, " ")
+func tableformatter(nicks []string, nicksPerRow int) string {
 	result := "|IRC users"
 	if nicksPerRow < 1 {
 		nicksPerRow = 4
@@ -31,8 +30,8 @@ func tableformatter(nicks_s string, nicksPerRow int) string {
 	return result
 }
 
-func plainformatter(nicks string, nicksPerRow int) string {
-	return nicks + " currently on IRC"
+func plainformatter(nicks []string, nicksPerRow int) string {
+	return strings.Join(nicks, ", ") + " currently on IRC"
 }
 
 func IsMarkup(message string) bool {

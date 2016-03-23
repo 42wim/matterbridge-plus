@@ -10,6 +10,13 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/Sirupsen/logrus",
+			"repository": "https://github.com/Sirupsen/logrus",
+			"revision": "4b6ea7319e214d98c938f12692336f7ca9348d6b",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/alecthomas/log4go",
 			"repository": "https://github.com/alecthomas/log4go",
 			"revision": "e5dc62318d9bd58682f1dceb53a4b24e8253682f",
@@ -99,9 +106,23 @@
 			"notests": true
 		},
 		{
+			"importpath": "gopkg.in/airbrake/gobrake.v2",
+			"repository": "https://gopkg.in/airbrake/gobrake.v2",
+			"revision": "c9d51adc624b5cc4c1bf8de730a09af4878ffe2d",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "gopkg.in/gcfg.v1",
 			"repository": "https://gopkg.in/gcfg.v1",
 			"revision": "083575c3955c85df16fe9590cceab64d03f5eb6e",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+			"repository": "https://gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+			"revision": "31e6fd4bd5a98d8ee7673d24bc54ec73c31810dd",
 			"branch": "master",
 			"notests": true
 		},

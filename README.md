@@ -1,3 +1,7 @@
+# develop branch
+
+!!!Needs mattermost master or latest docker mattermost build!!!
+
 # matterbridge-plus
 
 Simple bridge between mattermost and IRC. (Uses the mattermost API instead of webhooks)

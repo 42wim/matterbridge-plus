@@ -22,9 +22,9 @@ type MMapi struct {
 }
 
 type MMirc struct {
-	i           *irc.Connection
-	ircNick     string
-	ircNickPass string
+	i       *irc.Connection
+	ircNick string
+	ircMap  map[string]string
 }
 
 type MMMessage struct {
@@ -38,8 +38,7 @@ type Bridge struct {
 	MMapi
 	MMirc
 	*Config
-	ircMap map[string]string
-	kind   string
+	kind string
 }
 
 func NewBridge(name string, config *Config, kind string) *Bridge {

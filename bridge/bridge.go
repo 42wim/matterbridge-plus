@@ -26,6 +26,7 @@ type MMirc struct {
 	i           *irc.Connection
 	ircNick     string
 	ircNickPass string
+	names       []string
 }
 
 type MMMessage struct {
@@ -41,7 +42,6 @@ type Bridge struct {
 	*Config
 	ircMap map[string]string
 	kind   string
-	names  []string
 }
 
 func NewBridge(name string, config *Config, kind string) *Bridge {
@@ -151,13 +151,13 @@ func (b *Bridge) formatnicks(nicks []string) string {
 }
 
 func (b *Bridge) storeNames(event *irc.Event) {
-       b.names = append(b.names, strings.Split(event.Message(), " ")...)
+       b.MMirc.names = append(b.MMirc.names, strings.Split(event.Message(), " ")...)
 }
 
 func (b *Bridge) endNames(event *irc.Event) {
-       sort.Strings(b.names)
-       b.Send(b.ircNick, b.formatnicks(b.names), b.getMMChannel(event.Arguments[0]))
-       b.names = nil
+       sort.Strings(b.MMirc.names)
+       b.Send(b.ircNick, b.formatnicks(b.MMirc.names), b.getMMChannel(event.Arguments[0]))
+       b.MMirc.names = nil
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {

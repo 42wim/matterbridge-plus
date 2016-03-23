@@ -5,6 +5,7 @@ UseTLS=false
 SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
+UseSlackCircumfix=false
 
 [mattermost]
 server="yourmattermostserver.domain"
@@ -15,6 +16,11 @@ password="yourpass"
 showjoinpart=true
 channel="thechannel"
 #token=yourtokenfrommattermost
+PrefixMessagesWithNick=false
+NickFormatter=plain
+NicksPerRow=4
+#NickServNick="nickserv"
+#NickServPassword="secret"
 
 [general]
 GiphyAPIKey=dc6zaTOxFJmzC

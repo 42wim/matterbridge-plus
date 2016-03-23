@@ -7,9 +7,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/peterhellberg/giphy"
 	"github.com/thoj/go-ircevent"
+	"sort"
 	"strconv"
 	"strings"
-	"sort"
 )
 
 //type Bridge struct {
@@ -150,13 +150,13 @@ func (b *Bridge) formatnicks(nicks []string) string {
 }
 
 func (b *Bridge) storeNames(event *irc.Event) {
-       b.MMirc.names = append(b.MMirc.names, strings.Split(event.Message(), " ")...)
+	b.MMirc.names = append(b.MMirc.names, strings.Split(event.Message(), " ")...)
 }
 
 func (b *Bridge) endNames(event *irc.Event) {
-       sort.Strings(b.MMirc.names)
-       b.Send(b.ircNick, b.formatnicks(b.MMirc.names), b.getMMChannel(event.Arguments[2]))
-       b.MMirc.names = nil
+	sort.Strings(b.MMirc.names)
+	b.Send(b.ircNick, b.formatnicks(b.MMirc.names), b.getMMChannel(event.Arguments[2]))
+	b.MMirc.names = nil
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {

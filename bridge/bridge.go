@@ -150,7 +150,7 @@ func (b *Bridge) formatnicks(nicks []string) string {
 }
 
 func (b *Bridge) storeNames(event *irc.Event) {
-	b.MMirc.names = append(b.MMirc.names, strings.Split(event.Message(), " ")...)
+	b.MMirc.names = append(b.MMirc.names, strings.Split(strings.TrimSpace(event.Message()), " ")...)
 }
 
 func (b *Bridge) endNames(event *irc.Event) {

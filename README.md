@@ -7,10 +7,12 @@ Simple bridge between mattermost and IRC. (Uses the mattermost API instead of we
 * Matterbridge-plus also works with private groups on your mattermost.
 
 ## Requirements:
-* [Mattermost] (https://github.com/mattermost/platform/) 2.1.0 
+* [Mattermost] (https://github.com/mattermost/platform/) 2.1.0 (stable, not a dev build)
 * A dedicated user(bot) on your mattermost instance.
 
-There is also a version with webhooks that doesn't need a dedicated user. See [matterbridge] (https://github.com/42wim/matterbridge/)
+There is also a version with webhooks that doesn't need a dedicated user. See [matterbridge] (https://github.com/42wim/matterbridge/)   
+
+If you want to test with mattermost development builds, you also need to use the develop branch of matterbridge-plus.
 
 ## binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge-plus/releases/tag/v0.1)

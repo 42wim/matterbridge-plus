@@ -50,17 +50,13 @@ type FancyLog struct {
 
 var flog FancyLog;
 
-func (f *FancyLog) initFLog() {
-	if f.irc == nil {
-		f.irc = log.WithFields(log.Fields{"module": "irc"})
-	}
-	if f.mm == nil {
-		f.mm = log.WithFields(log.Fields{"module": "mattermost"})
-	}
+func initFLog() {
+	flog.irc = log.WithFields(log.Fields{"module": "irc"})
+	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
 }
 
 func NewBridge(name string, config *Config, kind string) *Bridge {
-	flog.initFLog()
+	initFLog()
 	b := &Bridge{}
 	b.Config = config
 	b.kind = kind

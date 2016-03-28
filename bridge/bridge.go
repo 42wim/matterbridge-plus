@@ -12,6 +12,7 @@ import (
 	"strings"
 	"regexp"
 	"runtime/debug"
+	"time"
 )
 
 //type Bridge struct {
@@ -44,6 +45,37 @@ type Bridge struct {
 	*Config
 	kind string
 }
+
+const (
+	IRC_RPL_WELCOME       = "001"
+	IRC_RPL_YOURHOST      = "002"
+	IRC_RPL_CREATED       = "003"
+	IRC_RPL_MYINFO        = "004"
+	IRC_RPL_BOUNCE        = "005"
+	IRC_RPL_STATSDLINE    = "250"
+	IRC_RPL_LUSERCLIENT   = "251"
+	IRC_RPL_LUSEROP       = "252"
+	IRC_RPL_LUSERUNKNOWN  = "253"
+	IRC_RPL_LUSERCHANNELS = "254"
+	IRC_RPL_LUSERME       = "255"
+	IRC_RPL_LOCALUSERS    = "265"
+	IRC_RPL_GLOBALUSERS   = "266"
+	IRC_RPL_TOPIC         = "332"
+	IRC_RPL_TOPICWHOTIME  = "333"
+	IRC_RPL_NAMREPLY      = "353"
+	IRC_RPL_ENDOFNAMES    = "366"
+	IRC_RPL_MOTD          = "372"
+	IRC_RPL_MOTDSTART     = "375"
+	IRC_RPL_ENDOFMOTD     = "376"
+
+	IRC_EVENT_MODE   = "MODE"
+	IRC_EVENT_JOIN   = "JOIN"
+	IRC_EVENT_PING   = "PING"
+	IRC_EVENT_PONG   = "PONG"
+	IRC_EVENT_NOTICE = "NOTICE"
+
+	ERR_NICKNAMEINUSE = "433"
+)
 
 type FancyLog struct {
 	irc *log.Entry
@@ -203,16 +235,65 @@ func (b *Bridge) endNames(event *irc.Event) {
 
 func (b *Bridge) handleOther(event *irc.Event) {
 	switch event.Code {
-	case "001":
+	case IRC_RPL_WELCOME:
 		b.handleNewConnection(event)
-	case "366":
+	case IRC_RPL_ENDOFNAMES:
 		b.endNames(event)
-	case "353":
+	case IRC_RPL_NAMREPLY:
 		b.storeNames(event)
-	case "NOTICE":
+	case IRC_RPL_BOUNCE:
+		fallthrough
+	case IRC_RPL_LUSEROP:
+		fallthrough
+	case IRC_RPL_LUSERUNKNOWN:
+		fallthrough
+	case IRC_RPL_LUSERCHANNELS:
+		fallthrough
+	case IRC_RPL_MYINFO:
+		flog.irc.Infof("%s: %s", event.Code, strings.Join(event.Arguments[1:], " "))
+	case IRC_RPL_YOURHOST:
+		fallthrough
+	case IRC_RPL_CREATED:
+		fallthrough
+	case IRC_RPL_STATSDLINE:
+		fallthrough
+	case IRC_RPL_LUSERCLIENT:
+		fallthrough
+	case IRC_RPL_LUSERME:
+		fallthrough
+	case IRC_RPL_LOCALUSERS:
+		fallthrough
+	case IRC_RPL_GLOBALUSERS:
+		fallthrough
+	case IRC_RPL_MOTD:
+		flog.irc.Infof("%s: %s", event.Code, event.Message())
+		// flog.irc.Info(event.Message())
+	case IRC_RPL_TOPIC:
+		flog.irc.Infof("%s: Topic for %s: %s", event.Code, event.Arguments[1], event.Message())
+	case IRC_RPL_TOPICWHOTIME:
+		parts := strings.Split(event.Arguments[2], "!")
+		t_i, err := strconv.ParseInt(event.Arguments[3], 10, 64)
+		if err != nil {
+			flog.irc.Panicf("Invalid time stamp: %s", event.Arguments[3])
+			break
+		}
+		flog.irc.Infof("%s: Topic set by %s [%s] [%s]", event.Code, parts[0], parts[1], time.Unix(t_i, 0))
+	case IRC_EVENT_MODE:
+		flog.irc.Infof("%s: %s %s", event.Code, event.Arguments[1], event.Arguments[0])
+	case IRC_EVENT_JOIN:
+		fallthrough
+	case IRC_EVENT_PING:
+		fallthrough
+	case IRC_EVENT_PONG:
+		flog.irc.Infof("%s: %s", event.Code, event.Message())
+	case IRC_RPL_ENDOFMOTD:
+	case IRC_RPL_MOTDSTART:
+	case ERR_NICKNAMEINUSE:
+		flog.irc.Warn(event.Message())
+	case IRC_EVENT_NOTICE:
 		b.handleNotice(event)
 	default:
-		flog.irc.Debugf("UNKNOWN EVENT: %+v", event)
+		flog.irc.Infof("UNKNOWN EVENT: %+v", event)
 		return
 	}
 	flog.irc.Debugf("%+v", event)

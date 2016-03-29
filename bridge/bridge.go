@@ -43,7 +43,20 @@ type Bridge struct {
 	kind string
 }
 
+type FancyLog struct {
+	irc *log.Entry
+	mm  *log.Entry
+}
+
+var flog FancyLog;
+
+func initFLog() {
+	flog.irc = log.WithFields(log.Fields{"module": "irc"})
+	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
+}
+
 func NewBridge(name string, config *Config, kind string) *Bridge {
+	initFLog()
 	b := &Bridge{}
 	b.Config = config
 	b.kind = kind
@@ -72,7 +85,7 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 			b.Config.Mattermost.Team, b.Config.Mattermost.Server)
 		err := b.mc.Login()
 		if err != nil {
-			log.Fatal("can not connect", err)
+			flog.mm.Fatal("can not connect", err)
 		}
 		go b.mc.WsReceiver()
 	}
@@ -100,16 +113,16 @@ func (b *Bridge) handleNewConnection(event *irc.Event) {
 
 func (b *Bridge) setupChannels() {
 	i := b.i
-	log.Info("Joining ", b.Config.IRC.Channel, " as ", b.ircNick)
+	flog.irc.Info("Joining ", b.Config.IRC.Channel, " as ", b.ircNick)
 	i.Join(b.Config.IRC.Channel)
 	if b.kind == "legacy" {
 		for _, val := range b.Config.Token {
-			log.Info("Joining ", val.IRCChannel, " as ", b.ircNick)
+			flog.irc.Info("Joining ", val.IRCChannel, " as ", b.ircNick)
 			i.Join(val.IRCChannel)
 		}
 	} else {
 		for _, val := range b.Config.Channel {
-			log.Info("Joining ", val.IRC, " as ", b.ircNick)
+			flog.irc.Info("Joining ", val.IRC, " as ", b.ircNick)
 			i.Join(val.IRC)
 		}
 	}
@@ -170,10 +183,10 @@ func (b *Bridge) handleOther(event *irc.Event) {
 	case "NOTICE":
 		b.handleNotice(event)
 	default:
-		log.Debugf("UNKNOWN EVENT: %+v", event)
+		flog.irc.Debugf("UNKNOWN EVENT: %+v", event)
 		return
 	}
-	log.Debugf("%+v", event)
+	flog.irc.Debugf("%+v", event)
 }
 
 func (b *Bridge) Send(nick string, message string, channel string) error {
@@ -196,12 +209,12 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 		matterMessage.Text = message
 		err := b.mh.Send(matterMessage)
 		if err != nil {
-			log.Info(err)
+			flog.mm.Info(err)
 			return err
 		}
 		return nil
 	}
-	log.Debug("->mattermost channel: ", channel, " ", message)
+	flog.mm.Debug("->mattermost channel: ", channel, " ", message)
 	b.mc.PostMessage(channel, message)
 	return nil
 }
@@ -225,7 +238,7 @@ func (b *Bridge) handleMatterClient(mchan chan *MMMessage) {
 			m.Username = message.Username
 			m.Channel = message.Channel
 			m.Text = message.Text
-			log.Debugf("<-mattermost channel: %s %#v %#v", message.Channel, message.Post, message.Raw)
+			flog.mm.Debugf("<-mattermost channel: %s %#v %#v", message.Channel, message.Post, message.Raw)
 			mchan <- m
 		}
 	}
@@ -247,7 +260,7 @@ func (b *Bridge) handleMatter() {
 		cmd := strings.Fields(message.Text)[0]
 		switch cmd {
 		case "!users":
-			log.Info("received !users from ", message.Username)
+			flog.mm.Info("received !users from ", message.Username)
 			b.i.SendRaw("NAMES " + b.getIRCChannel(message.Channel))
 			return
 		case "!gif":
@@ -257,7 +270,7 @@ func (b *Bridge) handleMatter() {
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
-			log.Debug("Sending message from " + message.Username + " to " + message.Channel)
+			flog.mm.Debug("Sending message from " + message.Username + " to " + message.Channel)
 			b.i.Privmsg(b.getIRCChannel(message.Channel), username+text)
 		}
 	}

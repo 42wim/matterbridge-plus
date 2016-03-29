@@ -6,6 +6,7 @@ SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
 UseSlackCircumfix=false
+RemoteNickFormat="<{NICK}> "
 
 [mattermost]
 server="yourmattermostserver.domain"
@@ -19,6 +20,7 @@ channel="thechannel"
 PrefixMessagesWithNick=false
 NickFormatter=plain
 NicksPerRow=4
+RemoteNickFormat="[irc] <{NICK}>"
 #NickServNick="nickserv"
 #NickServPassword="secret"
 

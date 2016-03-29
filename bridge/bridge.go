@@ -160,6 +160,16 @@ func (b *Bridge) handleIrcBotCommand(event *irc.Event) bool {
 	return false
 }
 
+func (b *Bridge) ircNickFormat(nick string) string {
+	if nick == b.ircNick {
+		return nick
+	}
+	if b.Config.Mattermost.RemoteNickFormat == nil {
+		return "irc-"+nick
+	}
+	return strings.Replace(*b.Config.Mattermost.RemoteNickFormat, "{NICK}", nick, -1)
+}
+
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
 	if b.handleIrcBotCommand(event) {
 		return
@@ -169,11 +179,11 @@ func (b *Bridge) handlePrivMsg(event *irc.Event) {
 		msg = event.Nick + " "
 	}
 	msg += event.Message()
-	b.Send("irc-"+event.Nick, msg, b.getMMChannel(event.Arguments[0]))
+	b.Send(b.ircNickFormat(event.Nick), msg, b.getMMChannel(event.Arguments[0]))
 }
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
-	b.Send(b.ircNick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
+	b.Send(b.ircNick, b.ircNickFormat(event.Nick)+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
 }
 
 func (b *Bridge) handleNotice(event *irc.Event) {
@@ -225,9 +235,9 @@ func (b *Bridge) Send(nick string, message string, channel string) error {
 func (b *Bridge) SendType(nick string, message string, channel string, mtype string) error {
 	if b.Config.Mattermost.PrefixMessagesWithNick {
 		if IsMarkup(message) {
-			message = nick + ":\n\n" + message
+			message = nick + "\n\n" + message
 		} else {
-			message = nick + ": " + message
+			message = nick + " " + message
 		}
 	}
 	if b.kind == "legacy" {
@@ -283,7 +293,9 @@ func (b *Bridge) handleMatter() {
 	for message := range mchan {
 		var username string
 		username = message.Username + ": "
-		if b.Config.IRC.UseSlackCircumfix {
+		if b.Config.IRC.RemoteNickFormat != "" {
+			username = strings.Replace(b.Config.IRC.RemoteNickFormat, "{NICK}", message.Username, -1)
+		} else if b.Config.IRC.UseSlackCircumfix {
 			username = "<" + message.Username + "> "
 		}
 		cmd := strings.Fields(message.Text)[0]

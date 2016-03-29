@@ -18,6 +18,7 @@ type Config struct {
 		UseSlackCircumfix bool
 		NickServNick      string
 		NickServPassword  string
+		RemoteNickFormat  string
 	}
 	Mattermost struct {
 		URL                    string
@@ -35,6 +36,7 @@ type Config struct {
 		Team                   string
 		Login                  string
 		Password               string
+		RemoteNickFormat       *string
 	}
 	Token map[string]*struct {
 		IRCChannel string

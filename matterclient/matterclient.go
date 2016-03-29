@@ -293,3 +293,17 @@ func (m *MMClient) UpdateLastViewed(channelId string) {
 		log.Print(err)
 	}
 }
+
+func (m *MMClient) UsernamesInChannel(channelName string) []string {
+	ceiRes, err := m.Client.GetChannelExtraInfo(m.GetChannelId(channelName), 5000, "")
+	if err != nil {
+		log.Errorf("UsernamesInChannel(%s) failed: %s", channelName, err)
+		return []string{}
+	}
+	extra := ceiRes.Data.(*model.ChannelExtra)
+	result := []string{}
+	for _, member := range extra.Members {
+		result = append(result, member.Username)
+	}
+	return result
+}

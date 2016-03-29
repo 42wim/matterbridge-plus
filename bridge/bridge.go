@@ -135,6 +135,9 @@ func (b *Bridge) setupChannels() {
 }
 
 func (b *Bridge) ircNickPrefix(nick string) string {
+	if nick == b.ircNick {
+		return nick
+	}
 	if b.Config.Mattermost.IrcNickPrefix == nil {
 		return "irc-"+nick
 	}

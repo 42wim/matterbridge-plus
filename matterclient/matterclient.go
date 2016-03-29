@@ -63,8 +63,9 @@ func (m *MMClient) Login() error {
 	m.Client = model.NewClient(uriScheme + m.Credentials.Server)
 	var myinfo *model.Result
 	var appErr *model.AppError
+	var logmsg = "trying login"
 	for {
-		log.Println("retrying login", m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
+		log.Println(logmsg, m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
 		myinfo, appErr = m.Client.LoginByEmail(m.Credentials.Team, m.Credentials.Login, m.Credentials.Pass)
 		if appErr != nil {
 			d := b.Duration()
@@ -74,6 +75,7 @@ func (m *MMClient) Login() error {
 			}
 			log.Printf("LOGIN: %s, reconnecting in %s", appErr, d)
 			time.Sleep(d)
+			logmsg = "retrying login"
 			continue
 		}
 		break

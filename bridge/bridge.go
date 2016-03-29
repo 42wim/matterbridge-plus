@@ -134,17 +134,24 @@ func (b *Bridge) setupChannels() {
 	}
 }
 
+func (b *Bridge) ircNickPrefix(nick string) string {
+	if b.Config.Mattermost.IrcNickPrefix == nil {
+		return "irc-"+nick
+	}
+	return *b.Config.Mattermost.IrcNickPrefix+nick
+}
+
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
 	msg := ""
 	if event.Code == "CTCP_ACTION" {
 		msg = event.Nick + " "
 	}
 	msg += event.Message()
-	b.Send("irc-"+event.Nick, msg, b.getMMChannel(event.Arguments[0]))
+	b.Send(b.ircNickPrefix(event.Nick), msg, b.getMMChannel(event.Arguments[0]))
 }
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
-	b.Send(b.ircNick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
+	b.Send(b.ircNick, b.ircNickPrefix(event.Nick)+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
 }
 
 func (b *Bridge) handleNotice(event *irc.Event) {

@@ -19,6 +19,7 @@ channel="thechannel"
 PrefixMessagesWithNick=false
 NickFormatter=plain
 NicksPerRow=4
+IrcNickPrefix="irc-"
 #NickServNick="nickserv"
 #NickServPassword="secret"
 

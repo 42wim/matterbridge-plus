@@ -35,6 +35,7 @@ type Config struct {
 		Team                   string
 		Login                  string
 		Password               string
+		IrcNickPrefix          *string
 	}
 	Token map[string]*struct {
 		IRCChannel string

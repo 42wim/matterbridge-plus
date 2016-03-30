@@ -45,7 +45,14 @@ Usage of matterbridge-plus:
 
 Matterbridge will:
 * connect to specified irc server and channel.
-* send messages from mattermost to irc and vice versa, messages in mattermost will appear with irc-nick
+* send messages from mattermost to irc and vice versa.
+
+If you set PrefixMessagesWithNick to true, each message from IRC to Mattermost
+will by default be prefixed by "irc-" + nick. You can, however, modify how the
+messages appear, by setting (and modifying) RemoteNickFormat.
+IRC.RemoteNickFormat defines how Mattermost nicks appear on IRC, and
+Mattermost.RemoteNickFormat defines how IRC users appear on Mattermost. The
+string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 
 ## config
 ### matterbridge-plus
@@ -62,6 +69,7 @@ SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
 UseSlackCircumfix=false
+RemoteNickFormat="<{NICK}> "
 
 [mattermost]
 server="yourmattermostserver.domain"
@@ -81,6 +89,7 @@ NicksPerRow=4
 NickServNick="nickserv"
 #Password for nickserv
 NickServPassword="secret"
+RemoteNickFormat="`irc` <{NICK}>"
 
 [general]
 #request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key

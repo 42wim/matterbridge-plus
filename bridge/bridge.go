@@ -87,6 +87,12 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 		if err != nil {
 			flog.mm.Fatal("can not connect", err)
 		}
+		b.mc.JoinChannel(b.Config.Mattermost.Channel)
+		if len(b.Config.Channel) > 0 {
+			for _, val := range b.Config.Channel {
+				b.mc.JoinChannel(val.Mattermost)
+			}
+		}
 		go b.mc.WsReceiver()
 	}
 	b.i = b.createIRC(name)

@@ -67,8 +67,12 @@ port=6667
 UseTLS=false
 SkipTLSVerify=true
 nick="matterbot"
-channel="#matterbridge"
+#channel= is deprecated please use the channel config below
 UseSlackCircumfix=false
+#Freenode nickserv
+NickServNick="nickserv"
+#Password for nickserv
+NickServPassword="secret"
 RemoteNickFormat="<{NICK}> "
 
 [mattermost]
@@ -78,24 +82,20 @@ team="yourteam"
 login="yourlogin"
 password="yourpass"
 showjoinpart=true
-channel="thechannel"
+#channel= is deprecated please use the channel config below
 #whether to prefix messages from IRC to mattermost with the sender's nick. Useful if username overrides for incoming webhooks isn't enabled on the mattermost server
 PrefixMessagesWithNick=false
 #how to format the list of IRC nicks when displayed in mattermost. Possible options are "table" and "plain"
 NickFormatter=plain
 #how many nicks to list per row for formatters that support this
 NicksPerRow=4
-#Freenode nickserv
-NickServNick="nickserv"
-#Password for nickserv
-NickServPassword="secret"
 RemoteNickFormat="`irc` <{NICK}>"
 
 [general]
 #request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key
 GiphyApiKey="dc6zaTOxFJmzC"
 
-#multiple channel config
+#channel config
 [channel "our testing channel"]
 irc="#bottesting"
 mattermost="testing"

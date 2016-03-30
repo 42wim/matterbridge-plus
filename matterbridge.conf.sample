@@ -4,8 +4,9 @@ port=6667
 UseTLS=false
 SkipTLSVerify=true
 nick="matterbot"
-channel="#matterbridge"
 UseSlackCircumfix=false
+#NickServNick="nickserv"
+#NickServPassword="secret"
 RemoteNickFormat="<{NICK}> "
 
 [mattermost]
@@ -15,19 +16,16 @@ team="yourteam"
 login="yourlogin"
 password="yourpass"
 showjoinpart=true
-channel="thechannel"
 #token=yourtokenfrommattermost
 PrefixMessagesWithNick=false
 NickFormatter=plain
 NicksPerRow=4
 RemoteNickFormat="[irc] <{NICK}>"
-#NickServNick="nickserv"
-#NickServPassword="secret"
 
 [general]
 GiphyAPIKey=dc6zaTOxFJmzC
 
-#multiple channel config
+#channel config
 [channel "our testing channel"]
 irc="#bottesting"
 mattermost="testing"

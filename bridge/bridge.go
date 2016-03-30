@@ -7,11 +7,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/peterhellberg/giphy"
 	"github.com/thoj/go-ircevent"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
-	"regexp"
-	"runtime/debug"
 )
 
 //type Bridge struct {
@@ -50,7 +49,7 @@ type FancyLog struct {
 	mm  *log.Entry
 }
 
-var flog FancyLog;
+var flog FancyLog
 
 func initFLog() {
 	flog.irc = log.WithFields(log.Fields{"module": "irc"})
@@ -146,8 +145,12 @@ func (b *Bridge) handleIrcBotCommand(event *irc.Event) bool {
 	parts := strings.Fields(event.Message())
 	exp, _ := regexp.Compile("[:,]+$")
 	channel := event.Arguments[0]
+	command := ""
+	if len(parts) == 2 {
+		command = parts[1]
+	}
 	if exp.ReplaceAllString(parts[0], "") == b.ircNick {
-		switch parts[1] {
+		switch command {
 		case "!users":
 			usernames := b.mc.UsernamesInChannel(b.getMMChannel(channel))
 			sort.Strings(usernames)
@@ -165,7 +168,7 @@ func (b *Bridge) ircNickFormat(nick string) string {
 		return nick
 	}
 	if b.Config.Mattermost.RemoteNickFormat == nil {
-		return "irc-"+nick
+		return "irc-" + nick
 	}
 	return strings.Replace(*b.Config.Mattermost.RemoteNickFormat, "{NICK}", nick, -1)
 }
@@ -332,7 +335,6 @@ func (b *Bridge) giphyRandom(query []string) string {
 func (b *Bridge) getMMChannel(ircChannel string) string {
 	mmchannel, ok := b.ircMap[ircChannel]
 	if !ok {
-		log.Warnf("getMMChannel: can't find channel '%s'\n%s", ircChannel, string(debug.Stack()))
 		mmchannel = b.Config.Mattermost.Channel
 	}
 	return mmchannel

@@ -47,7 +47,6 @@ func New(login, pass, team, server string) *MMClient {
 	mmclient := &MMClient{Credentials: cred, MessageChan: make(chan *Message, 100)}
 	mmclient.log = log.WithFields(log.Fields{"module": "matterclient"})
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
-	log.SetLevel(log.InfoLevel)
 	return mmclient
 }
 

@@ -56,6 +56,15 @@ func initFLog() {
 	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
 }
 
+func array_in(haystack []string, needle string) bool {
+	for _, straw := range haystack {
+		if needle == straw {
+			return true
+		}
+	}
+	return false
+}
+
 func NewBridge(name string, config *Config, kind string) *Bridge {
 	initFLog()
 	b := &Bridge{}
@@ -88,10 +97,22 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 		if err != nil {
 			flog.mm.Fatal("can not connect", err)
 		}
-		b.mc.JoinChannel(b.Config.Mattermost.Channel)
+		mychannels := b.mc.ChannelsImIn()
+		if b.Config.Mattermost.Channel != "" && !array_in(mychannels, b.Config.Mattermost.Channel) {
+			err = b.mc.JoinChannel(b.Config.Mattermost.Channel)
+			if err != nil {
+				flog.mm.Errorf("Failed to join %s: %v", b.Config.Mattermost.Channel, err)
+			}
+		}
 		if len(b.Config.Channel) > 0 {
 			for _, val := range b.Config.Channel {
-				b.mc.JoinChannel(val.Mattermost)
+				if array_in(mychannels, val.Mattermost) {
+					continue
+				}
+				err = b.mc.JoinChannel(val.Mattermost)
+				if err != nil {
+					log.Errorf("Failed to join %s: %v", val.Mattermost, err)
+				}
 			}
 		}
 		go b.mc.WsReceiver()
@@ -294,6 +315,7 @@ func (b *Bridge) handleMatter() {
 		go b.handleMatterClient(mchan)
 	}
 	for message := range mchan {
+		flog.mm.Debugf("Received MM message: %#v", message)
 		var username string
 		username = message.Username + ": "
 		if b.Config.IRC.RemoteNickFormat != "" {

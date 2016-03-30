@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/gorilla/websocket"
 	"github.com/jpillora/backoff"
@@ -240,11 +241,11 @@ func (m *MMClient) PostMessage(channel string, text string) {
 
 func (m *MMClient) JoinChannel(channel string) error {
 	if m.GetChannelId(strings.Replace(channel, "#", "", 1)) == "" {
-		return errors.New("failed to join")
+		return errors.New(fmt.Sprintf("Couldn't find channel ID for %s", channel))
 	}
 	_, err := m.Client.JoinChannel(m.GetChannelId(strings.Replace(channel, "#", "", 1)))
 	if err != nil {
-		return errors.New("failed to join")
+		return errors.New(fmt.Sprintf("%#v", err))
 	}
 	//	m.SyncChannel(m.getMMChannelId(strings.Replace(channel, "#", "", 1)), strings.Replace(channel, "#", "", 1))
 	return nil
@@ -293,16 +294,36 @@ func (m *MMClient) UpdateLastViewed(channelId string) {
 	}
 }
 
-func (m *MMClient) UsernamesInChannel(channelName string) []string {
-	ceiRes, err := m.Client.GetChannelExtraInfo(m.GetChannelId(channelName), 5000, "")
+func (m *MMClient) GetChannelExtraInfo(channelId string)  *model.ChannelExtra {
+	ceiRes, err := m.Client.GetChannelExtraInfo(channelId, 5000, "")
 	if err != nil {
-		log.Errorf("UsernamesInChannel(%s) failed: %s", channelName, err)
-		return []string{}
+		return nil
 	}
-	extra := ceiRes.Data.(*model.ChannelExtra)
+	return ceiRes.Data.(*model.ChannelExtra)
+}
+
+func (m *MMClient) UsernamesInChannel(channelName string) []string {
+	extra := m.GetChannelExtraInfo(m.GetChannelId(channelName))
 	result := []string{}
-	for _, member := range extra.Members {
-		result = append(result, member.Username)
+	if extra != nil {
+		for _, member := range extra.Members {
+			result = append(result, member.Username)
+		}
+	}
+	return result
+}
+
+func (m *MMClient) ChannelsImIn() []string {
+	result := []string{}
+	for _, channel := range append(m.Channels.Channels, m.MoreChannels.Channels...) {
+		extra := m.GetChannelExtraInfo(channel.Id)
+		if extra != nil {
+			for _, member := range extra.Members {
+				if member.Username == m.User.Username {
+					result = append(result, channel.Name)
+				}
+			}
+		}
 	}
 	return result
 }

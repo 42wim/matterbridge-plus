@@ -83,6 +83,13 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/sorcix/irc",
+			"repository": "https://github.com/sorcix/irc",
+			"revision": "b0e9178cb394e8dae013b459ffd23dca3237ed88",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/thoj/go-ircevent",
 			"repository": "https://github.com/thoj/go-ircevent",
 			"revision": "da78ed515c0f0833e7a92c7cc52898176198e2c1",

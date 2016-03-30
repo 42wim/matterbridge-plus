@@ -10,6 +10,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"regexp"
+	"runtime/debug"
 )
 
 //type Bridge struct {
@@ -140,7 +142,28 @@ func (b *Bridge) setupChannels() {
 	}
 }
 
+func (b *Bridge) handleIrcBotCommand(event *irc.Event) bool {
+	parts := strings.Fields(event.Message())
+	exp, _ := regexp.Compile("[:,]+$")
+	channel := event.Arguments[0]
+	if exp.ReplaceAllString(parts[0], "") == b.ircNick {
+		switch parts[1] {
+		case "!users":
+			usernames := b.mc.UsernamesInChannel(b.getMMChannel(channel))
+			sort.Strings(usernames)
+			b.i.Privmsg(channel, "Users on Mattermost: "+strings.Join(usernames, ", "))
+		default:
+			b.i.Privmsg(channel, "Valid commands are: [!users, !help]")
+		}
+		return true
+	}
+	return false
+}
+
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
+	if b.handleIrcBotCommand(event) {
+		return
+	}
 	msg := ""
 	if event.Code == "CTCP_ACTION" {
 		msg = event.Nick + " "
@@ -174,7 +197,7 @@ func (b *Bridge) storeNames(event *irc.Event) {
 
 func (b *Bridge) endNames(event *irc.Event) {
 	sort.Strings(b.MMirc.names)
-	b.Send(b.ircNick, b.formatnicks(b.MMirc.names), b.getMMChannel(event.Arguments[2]))
+	b.Send(b.ircNick, b.formatnicks(b.MMirc.names), b.getMMChannel(event.Arguments[1]))
 	b.MMirc.names = nil
 }
 
@@ -297,6 +320,7 @@ func (b *Bridge) giphyRandom(query []string) string {
 func (b *Bridge) getMMChannel(ircChannel string) string {
 	mmchannel, ok := b.ircMap[ircChannel]
 	if !ok {
+		log.Warnf("getMMChannel: can't find channel '%s'\n%s", ircChannel, string(debug.Stack()))
 		mmchannel = b.Config.Mattermost.Channel
 	}
 	return mmchannel

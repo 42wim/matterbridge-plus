@@ -160,12 +160,12 @@ func (b *Bridge) handleIrcBotCommand(event *irc.Event) bool {
 	}
 	if exp.ReplaceAllString(parts[0], "") == b.ircNick {
 		switch command {
-		case "!users":
+		case "users":
 			usernames := b.mc.UsernamesInChannel(b.getMMChannel(channel))
 			sort.Strings(usernames)
 			b.i.Privmsg(channel, "Users on Mattermost: "+strings.Join(usernames, ", "))
 		default:
-			b.i.Privmsg(channel, "Valid commands are: [!users, !help]")
+			b.i.Privmsg(channel, "Valid commands are: [users, help]")
 		}
 		return true
 	}

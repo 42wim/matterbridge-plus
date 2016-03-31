@@ -4,10 +4,10 @@ import (
 	"strings"
 )
 
-func tableformatter(nicks []string, nicksPerRow int) string {
+func tableformatter(nicks []string, nicksPerRow int, continued bool) string {
 	result := "|IRC users"
-	if nicksPerRow < 1 {
-		nicksPerRow = 4
+	if continued {
+		result = "|(continued)"
 	}
 	for i := 0; i < 2; i++ {
 		for j := 1; j <= nicksPerRow && j <= len(nicks); j++ {

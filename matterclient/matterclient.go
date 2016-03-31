@@ -239,10 +239,18 @@ func (m *MMClient) PostMessage(channel string, text string) {
 }
 
 func (m *MMClient) JoinChannel(channel string) error {
-	if m.GetChannelId(strings.Replace(channel, "#", "", 1)) == "" {
+	cleanChan := strings.Replace(channel, "#", "", 1)
+	if m.GetChannelId(cleanChan) == "" {
 		return errors.New("failed to join")
 	}
-	_, err := m.Client.JoinChannel(m.GetChannelId(strings.Replace(channel, "#", "", 1)))
+	for _, c := range m.Channels.Channels {
+		if c.Name == cleanChan {
+			m.log.Debug("Not joining ", cleanChan, " already joined.")
+			return nil
+		}
+	}
+	m.log.Debug("Joining ", cleanChan)
+	_, err := m.Client.JoinChannel(m.GetChannelId(cleanChan))
 	if err != nil {
 		return errors.New("failed to join")
 	}

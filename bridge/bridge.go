@@ -6,11 +6,13 @@ import (
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
 	"github.com/peterhellberg/giphy"
+	ircm "github.com/sorcix/irc"
 	"github.com/thoj/go-ircevent"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //type Bridge struct {
@@ -50,6 +52,13 @@ type FancyLog struct {
 }
 
 var flog FancyLog
+
+const (
+	IRC_RPL_STATSDLINE   = "250"
+	IRC_RPL_LOCALUSERS   = "265"
+	IRC_RPL_GLOBALUSERS  = "266"
+	IRC_RPL_TOPICWHOTIME = "333"
+)
 
 func initFLog() {
 	flog.irc = log.WithFields(log.Fields{"module": "irc"})
@@ -216,19 +225,68 @@ func (b *Bridge) endNames(event *irc.Event) {
 
 func (b *Bridge) handleOther(event *irc.Event) {
 	switch event.Code {
-	case "001":
+	case ircm.RPL_WELCOME:
 		b.handleNewConnection(event)
-	case "366":
+	case ircm.RPL_ENDOFNAMES:
 		b.endNames(event)
-	case "353":
+	case ircm.RPL_NAMREPLY:
 		b.storeNames(event)
-	case "NOTICE":
+	case ircm.RPL_ISUPPORT:
+		fallthrough
+	case ircm.RPL_LUSEROP:
+		fallthrough
+	case ircm.RPL_LUSERUNKNOWN:
+		fallthrough
+	case ircm.RPL_LUSERCHANNELS:
+		fallthrough
+	case ircm.RPL_MYINFO:
+		flog.irc.Infof("%s: %s", event.Code, strings.Join(event.Arguments[1:], " "))
+	case ircm.RPL_YOURHOST:
+		fallthrough
+	case ircm.RPL_CREATED:
+		fallthrough
+	case IRC_RPL_STATSDLINE:
+		fallthrough
+	case ircm.RPL_LUSERCLIENT:
+		fallthrough
+	case ircm.RPL_LUSERME:
+		fallthrough
+	case IRC_RPL_LOCALUSERS:
+		fallthrough
+	case IRC_RPL_GLOBALUSERS:
+		fallthrough
+	case ircm.RPL_MOTD:
+		flog.irc.Infof("%s: %s", event.Code, event.Message())
+		// flog.irc.Info(event.Message())
+	case ircm.RPL_TOPIC:
+		flog.irc.Infof("%s: Topic for %s: %s", event.Code, event.Arguments[1], event.Message())
+	case IRC_RPL_TOPICWHOTIME:
+		parts := strings.Split(event.Arguments[2], "!")
+		t_i, err := strconv.ParseInt(event.Arguments[3], 10, 64)
+		if err != nil {
+			flog.irc.Panicf("Invalid time stamp: %s", event.Arguments[3])
+			break
+		}
+		flog.irc.Infof("%s: Topic set by %s [%s] [%s]", event.Code, parts[0], parts[1], time.Unix(t_i, 0))
+	case ircm.MODE:
+		flog.irc.Infof("%s: %s %s", event.Code, event.Arguments[1], event.Arguments[0])
+	case ircm.JOIN:
+		fallthrough
+	case ircm.PING:
+		fallthrough
+	case ircm.PONG:
+		flog.irc.Infof("%s: %s", event.Code, event.Message())
+	case ircm.RPL_ENDOFMOTD:
+	case ircm.RPL_MOTDSTART:
+	case ircm.ERR_NICKNAMEINUSE:
+		flog.irc.Warn(event.Message())
+	case ircm.NOTICE:
 		b.handleNotice(event)
 	default:
-		flog.irc.Debugf("UNKNOWN EVENT: %+v", event)
+		flog.irc.Infof("UNKNOWN EVENT: %#v", event)
 		return
 	}
-	flog.irc.Debugf("%+v", event)
+	flog.irc.Debugf("%#v", event)
 }
 
 func (b *Bridge) Send(nick string, message string, channel string) error {

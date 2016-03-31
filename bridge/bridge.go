@@ -205,12 +205,19 @@ func (b *Bridge) handleNotice(event *irc.Event) {
 	}
 }
 
-func (b *Bridge) formatnicks(nicks []string) string {
+func (b *Bridge) nicksPerRow() int {
+	if b.Config.Mattermost.NicksPerRow < 1 {
+		return 4
+	}
+	return b.Config.Mattermost.NicksPerRow
+}
+
+func (b *Bridge) formatnicks(nicks []string, continued bool) string {
 	switch b.Config.Mattermost.NickFormatter {
 	case "table":
-		return tableformatter(nicks, b.Config.Mattermost.NicksPerRow)
+		return tableformatter(nicks, b.nicksPerRow(), continued)
 	default:
-		return plainformatter(nicks, b.Config.Mattermost.NicksPerRow)
+		return plainformatter(nicks, b.nicksPerRow())
 	}
 }
 
@@ -224,7 +231,17 @@ func (b *Bridge) storeNames(event *irc.Event) {
 func (b *Bridge) endNames(event *irc.Event) {
 	channel := event.Arguments[1]
 	sort.Strings(b.MMirc.names[channel])
-	b.Send(b.ircNick, b.formatnicks(b.MMirc.names[channel]), b.getMMChannel(channel))
+	maxNamesPerPost := (300 / b.nicksPerRow()) * b.nicksPerRow()
+	continued := false
+	for len(b.MMirc.names[channel]) > maxNamesPerPost {
+		b.Send(
+			b.ircNick,
+			b.formatnicks(b.MMirc.names[channel][0:maxNamesPerPost], continued),
+			b.getMMChannel(channel))
+		b.MMirc.names[channel] = b.MMirc.names[channel][maxNamesPerPost:]
+		continued = true
+	}
+	b.Send(b.ircNick, b.formatnicks(b.MMirc.names[channel], continued), b.getMMChannel(channel))
 	b.MMirc.names[channel] = nil
 }
 

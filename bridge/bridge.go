@@ -306,11 +306,11 @@ func (b *Bridge) handleMatter() {
 		case "!users":
 			flog.mm.Info("received !users from ", message.Username)
 			b.i.SendRaw("NAMES " + b.getIRCChannel(message.Channel))
-			return
+			continue
 		case "!gif":
 			message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
 			b.Send(b.ircNick, message.Text, b.getIRCChannel(message.Channel))
-			return
+			continue
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {

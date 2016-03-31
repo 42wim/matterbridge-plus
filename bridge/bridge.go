@@ -29,7 +29,7 @@ type MMirc struct {
 	i       *irc.Connection
 	ircNick string
 	ircMap  map[string]string
-	names   []string
+	names   map[string][]string
 }
 
 type MMMessage struct {
@@ -72,6 +72,7 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 	b.kind = kind
 	b.ircNick = b.Config.IRC.Nick
 	b.ircMap = make(map[string]string)
+	b.MMirc.names = make(map[string][]string)
 	if kind == "legacy" {
 		if len(b.Config.Token) > 0 {
 			for _, val := range b.Config.Token {
@@ -214,13 +215,17 @@ func (b *Bridge) formatnicks(nicks []string) string {
 }
 
 func (b *Bridge) storeNames(event *irc.Event) {
-	b.MMirc.names = append(b.MMirc.names, strings.Split(strings.TrimSpace(event.Message()), " ")...)
+	channel := event.Arguments[2]
+	b.MMirc.names[channel] = append(
+		b.MMirc.names[channel],
+		strings.Split(strings.TrimSpace(event.Message()), " ")...)
 }
 
 func (b *Bridge) endNames(event *irc.Event) {
-	sort.Strings(b.MMirc.names)
-	b.Send(b.ircNick, b.formatnicks(b.MMirc.names), b.getMMChannel(event.Arguments[1]))
-	b.MMirc.names = nil
+	channel := event.Arguments[1]
+	sort.Strings(b.MMirc.names[channel])
+	b.Send(b.ircNick, b.formatnicks(b.MMirc.names[channel]), b.getMMChannel(channel))
+	b.MMirc.names[channel] = nil
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {

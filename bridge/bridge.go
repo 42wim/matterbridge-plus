@@ -246,6 +246,7 @@ func (b *Bridge) endNames(event *irc.Event) {
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {
+	flog.irc.Debugf("%#v", event)
 	switch event.Code {
 	case ircm.RPL_WELCOME:
 		b.handleNewConnection(event)
@@ -308,7 +309,6 @@ func (b *Bridge) handleOther(event *irc.Event) {
 		flog.irc.Infof("UNKNOWN EVENT: %#v", event)
 		return
 	}
-	flog.irc.Debugf("%#v", event)
 }
 
 func (b *Bridge) Send(nick string, message string, channel string) error {

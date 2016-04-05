@@ -53,13 +53,6 @@ type FancyLog struct {
 
 var flog FancyLog
 
-const (
-	IRC_RPL_STATSDLINE   = "250"
-	IRC_RPL_LOCALUSERS   = "265"
-	IRC_RPL_GLOBALUSERS  = "266"
-	IRC_RPL_TOPICWHOTIME = "333"
-)
-
 func initFLog() {
 	flog.irc = log.WithFields(log.Fields{"module": "irc"})
 	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
@@ -283,23 +276,23 @@ func (b *Bridge) handleOther(event *irc.Event) {
 		fallthrough
 	case ircm.RPL_CREATED:
 		fallthrough
-	case IRC_RPL_STATSDLINE:
+	case ircm.RPL_STATSDLINE:
 		fallthrough
 	case ircm.RPL_LUSERCLIENT:
 		fallthrough
 	case ircm.RPL_LUSERME:
 		fallthrough
-	case IRC_RPL_LOCALUSERS:
+	case ircm.RPL_LOCALUSERS:
 		fallthrough
-	case IRC_RPL_GLOBALUSERS:
+	case ircm.RPL_GLOBALUSERS:
 		fallthrough
 	case ircm.RPL_MOTD:
 		flog.irc.Infof("%s: %s", event.Code, event.Message())
 		// flog.irc.Info(event.Message())
 	case ircm.RPL_TOPIC:
 		flog.irc.Infof("%s: Topic for %s: %s", event.Code, event.Arguments[1], event.Message())
-	case IRC_RPL_TOPICWHOTIME:
-		if ! b.handleTopicWhoTime(event) {
+	case ircm.RPL_TOPICWHOTIME:
+		if !b.handleTopicWhoTime(event) {
 			break
 		}
 	case ircm.MODE:

@@ -245,7 +245,23 @@ func (b *Bridge) endNames(event *irc.Event) {
 	b.MMirc.names[channel] = nil
 }
 
+func (b *Bridge) handleTopicWhoTime(event *irc.Event) bool {
+	parts := strings.Split(event.Arguments[2], "!")
+	t_i, err := strconv.ParseInt(event.Arguments[3], 10, 64)
+	if err != nil {
+		flog.irc.Errorf("Invalid time stamp: %s", event.Arguments[3])
+		return false
+	}
+	user := parts[0]
+	if len(parts) > 1 {
+		user += " [" + parts[1] + "]"
+	}
+	flog.irc.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t_i, 0))
+	return true
+}
+
 func (b *Bridge) handleOther(event *irc.Event) {
+	flog.irc.Debugf("%#v", event)
 	switch event.Code {
 	case ircm.RPL_WELCOME:
 		b.handleNewConnection(event)
@@ -283,13 +299,9 @@ func (b *Bridge) handleOther(event *irc.Event) {
 	case ircm.RPL_TOPIC:
 		flog.irc.Infof("%s: Topic for %s: %s", event.Code, event.Arguments[1], event.Message())
 	case IRC_RPL_TOPICWHOTIME:
-		parts := strings.Split(event.Arguments[2], "!")
-		t_i, err := strconv.ParseInt(event.Arguments[3], 10, 64)
-		if err != nil {
-			flog.irc.Panicf("Invalid time stamp: %s", event.Arguments[3])
+		if ! b.handleTopicWhoTime(event) {
 			break
 		}
-		flog.irc.Infof("%s: Topic set by %s [%s] [%s]", event.Code, parts[0], parts[1], time.Unix(t_i, 0))
 	case ircm.MODE:
 		flog.irc.Infof("%s: %s %s", event.Code, event.Arguments[1], event.Arguments[0])
 	case ircm.JOIN:
@@ -308,7 +320,6 @@ func (b *Bridge) handleOther(event *irc.Event) {
 		flog.irc.Infof("UNKNOWN EVENT: %#v", event)
 		return
 	}
-	flog.irc.Debugf("%#v", event)
 }
 
 func (b *Bridge) Send(nick string, message string, channel string) error {

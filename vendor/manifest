@@ -85,7 +85,7 @@
 		{
 			"importpath": "github.com/sorcix/irc",
 			"repository": "https://github.com/sorcix/irc",
-			"revision": "b0e9178cb394e8dae013b459ffd23dca3237ed88",
+			"revision": "2f0c85e4ec6590c2c6f6ef93b0a86021281ea193",
 			"branch": "master",
 			"notests": true
 		},

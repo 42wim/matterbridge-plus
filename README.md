@@ -10,15 +10,19 @@ Simple bridge between mattermost and IRC. (Uses the mattermost API instead of we
 * [Mattermost] (https://github.com/mattermost/platform/) 2.1.0 (stable, not a dev build)
 * A dedicated user(bot) on your mattermost instance.
 
+:warning: mattermost 2.1 on dockerhub is not the STABLE 2.1.0 release.
+If you use docker images be sure to run the mattermost image with tag 2.0 and not 2.1 :warning:
+
+Master branch of matterbridge-plus should always work against latest STABLE mattermost release.
+If you want to run matterbridge-plus with mattermost DEV builds, use the develop branch of matterbridge-plus
+
 There is also a version with webhooks that doesn't need a dedicated user. See [matterbridge] (https://github.com/42wim/matterbridge/)   
 
-If you want to test with mattermost development builds, you also need to use the develop branch of matterbridge-plus.
-
 ## binaries
-Binaries can be found [here] (https://github.com/42wim/matterbridge-plus/releases/tag/v0.1)
+Binaries can be found [here] (https://github.com/42wim/matterbridge-plus/releases/tag/v0.2)
 
 ## building
-Go 1.6 is required (or go1.5 with GO15VENDOREXPERIMENT=1)  
+Go 1.6 is required
 Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
 
 ```
@@ -39,8 +43,11 @@ matterbridge-plus
 3) Now you can run matterbridge-plus.
 
 ```
-Usage of matterbridge-plus:
-  -conf="matterbridge.conf": config file
+Usage of ./matterbridge-plus:
+  -conf string
+        config file (default "matterbridge.conf")
+  -debug
+        enable debug
 ```
 
 Matterbridge will:

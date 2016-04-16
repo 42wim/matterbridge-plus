@@ -7,11 +7,8 @@ Simple bridge between mattermost and IRC. (Uses the mattermost API instead of we
 * Matterbridge-plus also works with private groups on your mattermost.
 
 ## Requirements:
-* [Mattermost] (https://github.com/mattermost/platform/) 2.1.0 (stable, not a dev build)
+* [Mattermost] (https://github.com/mattermost/platform/) 2.1.0+ (stable, not a dev build)
 * A dedicated user(bot) on your mattermost instance.
-
-:warning: mattermost 2.1 on dockerhub is not the STABLE 2.1.0 release.
-If you use docker images be sure to run the mattermost image with tag 2.0 and not 2.1 :warning:
 
 Master branch of matterbridge-plus should always work against latest STABLE mattermost release.
 If you want to run matterbridge-plus with mattermost DEV builds, use the develop branch of matterbridge-plus

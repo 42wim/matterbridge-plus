@@ -47,15 +47,15 @@
 		{
 			"importpath": "github.com/mattermost/platform/einterfaces",
 			"repository": "https://github.com/mattermost/platform",
-			"revision": "aed690c5891a2cff97cc5fa00648c86be54ed8ee",
-			"branch": "master",
+			"revision": "8e883ad2f516820942cc0131241268c1ea909ff3",
+			"branch": "HEAD",
 			"path": "/einterfaces",
 			"notests": true
 		},
 		{
 			"importpath": "github.com/mattermost/platform/model",
 			"repository": "https://github.com/mattermost/platform",
-			"revision": "f189bc2073cf800c5f4506a69bdb51d7065269bf",
+			"revision": "8e883ad2f516820942cc0131241268c1ea909ff3",
 			"branch": "HEAD",
 			"path": "/model",
 			"notests": true
@@ -110,6 +110,14 @@
 			"revision": "c197bcf24cde29d3f73c7b4ac6fd41f4384e8af6",
 			"branch": "master",
 			"path": "/blowfish",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/http2/hpack",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "fb93926129b8ec0056f2f458b1f519654814edf0",
+			"branch": "master",
+			"path": "/http2/hpack",
 			"notests": true
 		},
 		{

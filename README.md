@@ -7,7 +7,8 @@ Simple bridge between mattermost and IRC. (Uses the mattermost API instead of we
 * Matterbridge-plus also works with private groups on your mattermost.
 
 ## Requirements:
-* [Mattermost] (https://github.com/mattermost/platform/) 2.1.0+ (stable, not a dev build)
+* [Mattermost] (https://github.com/mattermost/platform/) 3.0.0 (stable, not a dev build)
+* For older versions of mattermost 2.x use matterbridge-plus tag v0.2
 * A dedicated user(bot) on your mattermost instance.
 
 Master branch of matterbridge-plus should always work against latest STABLE mattermost release.
@@ -16,7 +17,8 @@ If you want to run matterbridge-plus with mattermost DEV builds, use the develop
 There is also a version with webhooks that doesn't need a dedicated user. See [matterbridge] (https://github.com/42wim/matterbridge/)   
 
 ## binaries
-Binaries can be found [here] (https://github.com/42wim/matterbridge-plus/releases/tag/v0.2)
+Binaries (for mattermost 3.0) can be found [here] (https://github.com/42wim/matterbridge-plus/releases/tag/v0.3)
+Older binaries can be found [here] (https://github.com/42wim/matterbridge-plus/releases/)
 
 ## building
 Go 1.6 is required

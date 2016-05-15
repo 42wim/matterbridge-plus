@@ -279,7 +279,7 @@ func (m *MMClient) GetPostsSince(channelId string, time int64) *model.PostList {
 }
 
 func (m *MMClient) SearchPosts(query string) *model.PostList {
-	res, err := m.Client.SearchPosts(query)
+	res, err := m.Client.SearchPosts(query, false)
 	if err != nil {
 		return nil
 	}

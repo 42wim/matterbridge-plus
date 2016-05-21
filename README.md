@@ -80,6 +80,8 @@ NickServNick="nickserv"
 #Password for nickserv
 NickServPassword="secret"
 RemoteNickFormat="<{NICK}> "
+#Ignore the messages from these nicks. They will not be sent to mattermost
+IgnoreNicks="ircspammer1 ircspammer2"
 
 [mattermost]
 server="yourmattermostserver.domain"
@@ -96,6 +98,8 @@ NickFormatter=plain
 #how many nicks to list per row for formatters that support this
 NicksPerRow=4
 RemoteNickFormat="`irc` <{NICK}>"
+#Ignore the messages from these nicks. They will not be sent to irc
+IgnoreNicks="mmbot spammer2"
 
 [general]
 #request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key

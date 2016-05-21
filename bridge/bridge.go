@@ -21,15 +21,17 @@ type MMhook struct {
 }
 
 type MMapi struct {
-	mc    *matterclient.MMClient
-	mmMap map[string]string
+	mc            *matterclient.MMClient
+	mmMap         map[string]string
+	mmIgnoreNicks []string
 }
 
 type MMirc struct {
-	i       *irc.Connection
-	ircNick string
-	ircMap  map[string]string
-	names   map[string][]string
+	i              *irc.Connection
+	ircNick        string
+	ircMap         map[string]string
+	names          map[string][]string
+	ircIgnoreNicks []string
 }
 
 type MMMessage struct {
@@ -66,6 +68,8 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 	b.ircNick = b.Config.IRC.Nick
 	b.ircMap = make(map[string]string)
 	b.MMirc.names = make(map[string][]string)
+	b.ircIgnoreNicks = strings.Fields(b.Config.IRC.IgnoreNicks)
+	b.mmIgnoreNicks = strings.Fields(b.Config.Mattermost.IgnoreNicks)
 	if kind == "legacy" {
 		if len(b.Config.Token) > 0 {
 			for _, val := range b.Config.Token {
@@ -177,6 +181,9 @@ func (b *Bridge) ircNickFormat(nick string) string {
 }
 
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
+	if b.ignoreMessage(event.Nick, event.Message(), "irc") {
+		return
+	}
 	if b.handleIrcBotCommand(event) {
 		return
 	}
@@ -379,6 +386,9 @@ func (b *Bridge) handleMatter() {
 	}
 	for message := range mchan {
 		var username string
+		if b.ignoreMessage(message.Username, message.Text, "mattermost") {
+			continue
+		}
 		username = message.Username + ": "
 		if b.Config.IRC.RemoteNickFormat != "" {
 			username = strings.Replace(b.Config.IRC.RemoteNickFormat, "{NICK}", message.Username, -1)
@@ -438,4 +448,18 @@ func (b *Bridge) getIRCChannel(channel string) string {
 		ircchannel = b.Config.IRC.Channel
 	}
 	return ircchannel
+}
+
+func (b *Bridge) ignoreMessage(nick string, message string, protocol string) bool {
+	var ignoreNicks = b.mmIgnoreNicks
+	if protocol == "irc" {
+		ignoreNicks = b.ircIgnoreNicks
+	}
+	// should we discard messages ?
+	for _, entry := range ignoreNicks {
+		if nick == entry {
+			return true
+		}
+	}
+	return false
 }

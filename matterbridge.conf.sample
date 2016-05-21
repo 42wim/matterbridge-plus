@@ -8,6 +8,7 @@ UseSlackCircumfix=false
 #NickServNick="nickserv"
 #NickServPassword="secret"
 RemoteNickFormat="<{NICK}> "
+IgnoreNicks="ircspammer1 ircspammer2"
 
 [mattermost]
 server="yourmattermostserver.domain"
@@ -21,6 +22,7 @@ PrefixMessagesWithNick=false
 NickFormatter=plain
 NicksPerRow=4
 RemoteNickFormat="[irc] <{NICK}>"
+IgnoreNicks="mmbot spammer2"
 
 [general]
 GiphyAPIKey=dc6zaTOxFJmzC

@@ -19,6 +19,7 @@ type Config struct {
 		NickServNick      string
 		NickServPassword  string
 		RemoteNickFormat  string
+		IgnoreNicks       string
 	}
 	Mattermost struct {
 		URL                    string
@@ -37,6 +38,7 @@ type Config struct {
 		Login                  string
 		Password               string
 		RemoteNickFormat       *string
+		IgnoreNicks            string
 	}
 	Token map[string]*struct {
 		IRCChannel string

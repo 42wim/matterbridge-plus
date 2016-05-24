@@ -17,7 +17,7 @@ If you want to run matterbridge-plus with mattermost DEV builds, use the develop
 There is also a version with webhooks that doesn't need a dedicated user. See [matterbridge] (https://github.com/42wim/matterbridge/)   
 
 ## binaries
-Binaries (for mattermost 3.0) can be found [here] (https://github.com/42wim/matterbridge-plus/releases/tag/v0.3)
+Binaries (for mattermost 3.0) can be found [here] (https://github.com/42wim/matterbridge-plus/releases/tag/v0.3.1)
 Older binaries can be found [here] (https://github.com/42wim/matterbridge-plus/releases/)
 
 ## building

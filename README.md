@@ -85,6 +85,10 @@ IgnoreNicks="ircspammer1 ircspammer2"
 
 [mattermost]
 server="yourmattermostserver.domain"
+#certificate check by default
+SkipTLSVerify=false
+#https by default
+NoTLS=false
 team="yourteam"
 #login/pass of your bot. Use a dedicated user for this and not your own!
 login="yourlogin"

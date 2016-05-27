@@ -39,6 +39,7 @@ type Config struct {
 		Password               string
 		RemoteNickFormat       *string
 		IgnoreNicks            string
+		NoTLS                  bool
 	}
 	Token map[string]*struct {
 		IRCChannel string

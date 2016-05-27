@@ -91,6 +91,8 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 		}
 		b.mc = matterclient.New(b.Config.Mattermost.Login, b.Config.Mattermost.Password,
 			b.Config.Mattermost.Team, b.Config.Mattermost.Server)
+		b.mc.SkipTLSVerify = b.Config.Mattermost.SkipTLSVerify
+		b.mc.NoTLS = b.Config.Mattermost.NoTLS
 		err := b.mc.Login()
 		if err != nil {
 			flog.mm.Fatal("can not connect", err)

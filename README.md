@@ -117,4 +117,10 @@ mattermost="testing"
 [channel "random channel"]
 irc="#random"
 mattermost="random"
+
+[channel "town square"]
+irc="#square"
+# Note that the name given here must correspond to the URL of the
+# channel, not it's display name.
+mattermost="town-square"
 ```

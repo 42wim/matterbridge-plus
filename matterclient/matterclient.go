@@ -360,3 +360,30 @@ func (m *MMClient) createCookieJar(token string) *cookiejar.Jar {
 	jar.SetCookies(cookieURL, cookies)
 	return jar
 }
+
+func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
+	log.Println("SendDirectMessage to:", toUserId, msg)
+	var channel string
+	// We don't have a DM with this user yet.
+	if m.GetChannelId(toUserId+"__"+m.User.Id) == "" && m.GetChannelId(m.User.Id+"__"+toUserId) == "" {
+		// create DM channel
+		_, err := m.Client.CreateDirectChannel(toUserId)
+		if err != nil {
+			log.Debugf("SendDirectMessage to %#v failed: %s", toUserId, err)
+		}
+		// update our channels
+		mmchannels, _ := m.Client.GetChannels("")
+		m.Channels = mmchannels.Data.(*model.ChannelList)
+	}
+
+	// build the channel name
+	if toUserId > m.User.Id {
+		channel = m.User.Id + "__" + toUserId
+	} else {
+		channel = toUserId + "__" + m.User.Id
+	}
+	// build & send the message
+	msg = strings.Replace(msg, "\r", "", -1)
+	post := &model.Post{ChannelId: m.GetChannelId(channel), Message: msg}
+	m.Client.CreatePost(post)
+}

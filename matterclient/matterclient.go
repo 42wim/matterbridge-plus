@@ -37,6 +37,7 @@ type MMClient struct {
 	*Credentials
 	Client       *model.Client
 	WsClient     *websocket.Conn
+	WsQuit       bool
 	Channels     *model.ChannelList
 	MoreChannels *model.ChannelList
 	User         *model.User
@@ -64,6 +65,9 @@ func (m *MMClient) SetLogLevel(level string) {
 }
 
 func (m *MMClient) Login() error {
+	if m.WsQuit {
+		return nil
+	}
 	b := &backoff.Backoff{
 		Min:    time.Second,
 		Max:    5 * time.Minute,
@@ -137,11 +141,11 @@ func (m *MMClient) Login() error {
 	header := http.Header{}
 	header.Set(model.HEADER_AUTH, "BEARER "+m.Client.AuthToken)
 
-	var WsClient *websocket.Conn
+	m.log.Debug("WsClient: making connection")
 	var err error
 	for {
 		wsDialer := &websocket.Dialer{Proxy: http.ProxyFromEnvironment, TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}}
-		WsClient, _, err = wsDialer.Dial(wsurl, header)
+		m.WsClient, _, err = wsDialer.Dial(wsurl, header)
 		if err != nil {
 			d := b.Duration()
 			log.Printf("WSS: %s, reconnecting in %s", err, d)
@@ -151,8 +155,6 @@ func (m *MMClient) Login() error {
 		break
 	}
 	b.Reset()
-
-	m.WsClient = WsClient
 
 	// populating users
 	m.UpdateUsers()
@@ -166,6 +168,10 @@ func (m *MMClient) Login() error {
 func (m *MMClient) WsReceiver() {
 	var rmsg model.Message
 	for {
+		if m.WsQuit {
+			m.log.Debug("exiting WsReceiver")
+			return
+		}
 		if err := m.WsClient.ReadJSON(&rmsg); err != nil {
 			log.Println("error:", err)
 			// reconnect

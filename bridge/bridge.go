@@ -397,7 +397,12 @@ func (b *Bridge) handleMatter() {
 		} else if b.Config.IRC.UseSlackCircumfix {
 			username = "<" + message.Username + "> "
 		}
-		cmd := strings.Fields(message.Text)[0]
+		cmds := strings.Fields(message.Text)
+		// empty message
+		if len(cmds) == 0 {
+			continue
+		}
+		cmd := cmds[0]
 		switch cmd {
 		case "!users":
 			flog.mm.Info("received !users from ", message.Username)

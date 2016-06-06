@@ -319,6 +319,14 @@ func (m *MMClient) GetPosts(channelId string, limit int) *model.PostList {
 	return res.Data.(*model.PostList)
 }
 
+func (m *MMClient) GetPublicLink(filename string) string {
+	res, err := m.Client.GetPublicLink(filename)
+	if err != nil {
+		return ""
+	}
+	return res.Data.(string)
+}
+
 func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
 	data := make(map[string]string)
 	data["channel_id"] = channelId

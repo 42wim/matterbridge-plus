@@ -38,6 +38,7 @@ type MMClient struct {
 	Client       *model.Client
 	WsClient     *websocket.Conn
 	WsQuit       bool
+	WsAway       bool
 	Channels     *model.ChannelList
 	MoreChannels *model.ChannelList
 	User         *model.User
@@ -177,12 +178,23 @@ func (m *MMClient) WsReceiver() {
 			// reconnect
 			m.Login()
 		}
-		//log.Printf("WsReceiver: %#v", rmsg)
+		if rmsg.Action == "ping" {
+			m.handleWsPing()
+			continue
+		}
 		msg := &Message{Raw: &rmsg, Team: m.Credentials.Team}
 		m.parseMessage(msg)
 		m.MessageChan <- msg
 	}
 
+}
+
+func (m *MMClient) handleWsPing() {
+	m.log.Debug("Ws PING")
+	if !m.WsQuit && !m.WsAway {
+		m.log.Debug("Ws PONG")
+		m.WsClient.WriteMessage(websocket.PongMessage, []byte{})
+	}
 }
 
 func (m *MMClient) parseMessage(rmsg *Message) {

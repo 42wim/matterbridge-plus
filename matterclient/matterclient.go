@@ -399,6 +399,20 @@ func (m *MMClient) createCookieJar(token string) *cookiejar.Jar {
 	return jar
 }
 
+func (m *MMClient) GetOtherUserDM(channel string) *model.User {
+	m.UpdateUsers()
+	var rcvuser *model.User
+	if strings.Contains(channel, "__") {
+		rcvusers := strings.Split(channel, "__")
+		if rcvusers[0] != m.User.Id {
+			rcvuser = m.Users[rcvusers[0]]
+		} else {
+			rcvuser = m.Users[rcvusers[1]]
+		}
+	}
+	return rcvuser
+}
+
 func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
 	log.Println("SendDirectMessage to:", toUserId, msg)
 	var channel string

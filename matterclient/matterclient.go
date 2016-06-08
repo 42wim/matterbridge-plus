@@ -339,6 +339,18 @@ func (m *MMClient) GetPublicLink(filename string) string {
 	return res.Data.(string)
 }
 
+func (m *MMClient) GetPublicLinks(filenames []string) []string {
+	var output []string
+	for _, f := range filenames {
+		res, err := m.Client.GetPublicLink(f)
+		if err != nil {
+			continue
+		}
+		output = append(output, res.Data.(string))
+	}
+	return output
+}
+
 func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
 	data := make(map[string]string)
 	data["channel_id"] = channelId

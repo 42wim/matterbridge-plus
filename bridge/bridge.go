@@ -55,6 +55,8 @@ type FancyLog struct {
 
 var flog FancyLog
 
+const Legacy = "legacy"
+
 func initFLog() {
 	flog.irc = log.WithFields(log.Fields{"module": "irc"})
 	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
@@ -70,7 +72,7 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 	b.MMirc.names = make(map[string][]string)
 	b.ircIgnoreNicks = strings.Fields(b.Config.IRC.IgnoreNicks)
 	b.mmIgnoreNicks = strings.Fields(b.Config.Mattermost.IgnoreNicks)
-	if kind == "legacy" {
+	if kind == Legacy {
 		if len(b.Config.Token) > 0 {
 			for _, val := range b.Config.Token {
 				b.ircMap[val.IRCChannel] = val.MMChannel
@@ -131,7 +133,7 @@ func (b *Bridge) setupChannels() {
 	i := b.i
 	flog.irc.Info("Joining ", b.Config.IRC.Channel, " as ", b.ircNick)
 	i.Join(b.Config.IRC.Channel)
-	if b.kind == "legacy" {
+	if b.kind == Legacy {
 		for _, val := range b.Config.Token {
 			flog.irc.Info("Joining ", val.IRCChannel, " as ", b.ircNick)
 			i.Join(val.IRCChannel)
@@ -249,7 +251,7 @@ func (b *Bridge) endNames(event *irc.Event) {
 
 func (b *Bridge) handleTopicWhoTime(event *irc.Event) bool {
 	parts := strings.Split(event.Arguments[2], "!")
-	t_i, err := strconv.ParseInt(event.Arguments[3], 10, 64)
+	t, err := strconv.ParseInt(event.Arguments[3], 10, 64)
 	if err != nil {
 		flog.irc.Errorf("Invalid time stamp: %s", event.Arguments[3])
 		return false
@@ -258,7 +260,7 @@ func (b *Bridge) handleTopicWhoTime(event *irc.Event) bool {
 	if len(parts) > 1 {
 		user += " [" + parts[1] + "]"
 	}
-	flog.irc.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t_i, 0))
+	flog.irc.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t, 0))
 	return true
 }
 
@@ -336,7 +338,7 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 			message = nick + " " + message
 		}
 	}
-	if b.kind == "legacy" {
+	if b.kind == Legacy {
 		matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
@@ -381,7 +383,7 @@ func (b *Bridge) handleMatterClient(mchan chan *MMMessage) {
 
 func (b *Bridge) handleMatter() {
 	mchan := make(chan *MMMessage)
-	if b.kind == "legacy" {
+	if b.kind == Legacy {
 		go b.handleMatterHook(mchan)
 	} else {
 		go b.handleMatterClient(mchan)
@@ -442,7 +444,7 @@ func (b *Bridge) getMMChannel(ircChannel string) string {
 }
 
 func (b *Bridge) getIRCChannel(channel string) string {
-	if b.kind == "legacy" {
+	if b.kind == Legacy {
 		ircchannel := b.Config.IRC.Channel
 		_, ok := b.Config.Token[channel]
 		if ok {

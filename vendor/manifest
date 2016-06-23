@@ -4,8 +4,8 @@
 		{
 			"importpath": "github.com/42wim/matterbridge/matterhook",
 			"repository": "https://github.com/42wim/matterbridge",
-			"vcs": "",
-			"revision": "6b18257185b1830bd2eff83fae30bdd2055f78b0",
+			"vcs": "git",
+			"revision": "0f2976c5ce176a529c862907add54874ffd70252",
 			"branch": "master",
 			"path": "/matterhook",
 			"notests": true
@@ -54,8 +54,8 @@
 			"importpath": "github.com/mattermost/platform/einterfaces",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",
-			"revision": "9d94869cc6a0fb9f051879437c104ccd76094380",
-			"branch": "HEAD",
+			"revision": "974238231b9cdbd39a825ec8e9299fbb0b51f6b8",
+			"branch": "release-3.1",
 			"path": "/einterfaces",
 			"notests": true
 		},
@@ -63,8 +63,8 @@
 			"importpath": "github.com/mattermost/platform/model",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",
-			"revision": "9d94869cc6a0fb9f051879437c104ccd76094380",
-			"branch": "HEAD",
+			"revision": "974238231b9cdbd39a825ec8e9299fbb0b51f6b8",
+			"branch": "release-3.1",
 			"path": "/model",
 			"notests": true
 		},
@@ -134,6 +134,15 @@
 			"revision": "fb93926129b8ec0056f2f458b1f519654814edf0",
 			"branch": "master",
 			"path": "/http2/hpack",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/lex/httplex",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "bc3663df0ac92f928d419e31e0d2af22e683a5a2",
+			"branch": "master",
+			"path": "/lex/httplex",
 			"notests": true
 		},
 		{

@@ -400,7 +400,10 @@ func (b *Bridge) getMMChannel(ircChannel string) string {
 	if !ok {
 		mmchannel = b.Config.Mattermost.Channel
 	}
-	return mmchannel
+	if b.kind == Legacy {
+		return mmchannel
+	}
+	return b.mc.GetChannelId(mmchannel, "")
 }
 
 func (b *Bridge) getIRCChannel(channel string) string {

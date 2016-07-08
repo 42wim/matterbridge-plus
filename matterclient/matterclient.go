@@ -7,6 +7,7 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -43,6 +44,7 @@ type Team struct {
 }
 
 type MMClient struct {
+	sync.RWMutex
 	*Credentials
 	Team        *Team
 	OtherTeams  []*Team
@@ -247,19 +249,25 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 
 func (m *MMClient) UpdateUsers() error {
 	mmusers, _ := m.Client.GetProfilesForDirectMessageList(m.Team.Id)
+	m.Lock()
 	m.Users = mmusers.Data.(map[string]*model.User)
+	m.Unlock()
 	return nil
 }
 
 func (m *MMClient) UpdateChannels() error {
 	mmchannels, _ := m.Client.GetChannels("")
 	mmchannels2, _ := m.Client.GetMoreChannels("")
+	m.Lock()
 	m.Team.Channels = mmchannels.Data.(*model.ChannelList)
 	m.Team.MoreChannels = mmchannels2.Data.(*model.ChannelList)
+	m.Unlock()
 	return nil
 }
 
 func (m *MMClient) GetChannelName(channelId string) string {
+	m.RLock()
+	defer m.RUnlock()
 	for _, t := range m.OtherTeams {
 		for _, channel := range append(t.Channels.Channels, t.MoreChannels.Channels...) {
 			if channel.Id == channelId {
@@ -271,6 +279,8 @@ func (m *MMClient) GetChannelName(channelId string) string {
 }
 
 func (m *MMClient) GetChannelId(name string, teamId string) string {
+	m.RLock()
+	defer m.RUnlock()
 	if teamId == "" {
 		teamId = m.Team.Id
 	}
@@ -287,6 +297,8 @@ func (m *MMClient) GetChannelId(name string, teamId string) string {
 }
 
 func (m *MMClient) GetChannelHeader(channelId string) string {
+	m.RLock()
+	defer m.RUnlock()
 	for _, t := range m.OtherTeams {
 		for _, channel := range append(t.Channels.Channels, t.MoreChannels.Channels...) {
 			if channel.Id == channelId {
@@ -304,6 +316,8 @@ func (m *MMClient) PostMessage(channelId string, text string) {
 }
 
 func (m *MMClient) JoinChannel(channelId string) error {
+	m.RLock()
+	defer m.RUnlock()
 	for _, c := range m.Team.Channels.Channels {
 		if c.Id == channelId {
 			m.log.Debug("Not joining ", channelId, " already joined.")
@@ -436,7 +450,9 @@ func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
 
 	// update our channels
 	mmchannels, _ := m.Client.GetChannels("")
+	m.Lock()
 	m.Team.Channels = mmchannels.Data.(*model.ChannelList)
+	m.Unlock()
 
 	// build & send the message
 	msg = strings.Replace(msg, "\r", "", -1)
@@ -446,6 +462,8 @@ func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
 
 // GetTeamName returns the name of the specified teamId
 func (m *MMClient) GetTeamName(teamId string) string {
+	m.RLock()
+	defer m.RUnlock()
 	for _, t := range m.OtherTeams {
 		if t.Id == teamId {
 			return t.Team.Name
@@ -456,6 +474,8 @@ func (m *MMClient) GetTeamName(teamId string) string {
 
 // GetChannels returns all channels we're members off
 func (m *MMClient) GetChannels() []*model.Channel {
+	m.RLock()
+	defer m.RUnlock()
 	var channels []*model.Channel
 	// our primary team channels first
 	channels = append(channels, m.Team.Channels.Channels...)
@@ -469,6 +489,8 @@ func (m *MMClient) GetChannels() []*model.Channel {
 
 // GetMoreChannels returns existing channels where we're not a member off.
 func (m *MMClient) GetMoreChannels() []*model.Channel {
+	m.RLock()
+	defer m.RUnlock()
 	var channels []*model.Channel
 	for _, t := range m.OtherTeams {
 		channels = append(channels, t.MoreChannels.Channels...)
@@ -478,6 +500,8 @@ func (m *MMClient) GetMoreChannels() []*model.Channel {
 
 // GetTeamFromChannel returns teamId belonging to channel (DM channels have no teamId).
 func (m *MMClient) GetTeamFromChannel(channelId string) string {
+	m.RLock()
+	defer m.RUnlock()
 	var channels []*model.Channel
 	for _, t := range m.OtherTeams {
 		channels = append(channels, t.Channels.Channels...)
@@ -492,6 +516,8 @@ func (m *MMClient) GetTeamFromChannel(channelId string) string {
 
 // initialize user and teams
 func (m *MMClient) initUser() error {
+	m.Lock()
+	defer m.Unlock()
 	m.log.Debug("initUser()")
 	initLoad, err := m.Client.GetInitialLoad()
 	if err != nil {

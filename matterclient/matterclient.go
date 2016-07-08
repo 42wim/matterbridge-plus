@@ -175,6 +175,19 @@ func (m *MMClient) Login() error {
 	return nil
 }
 
+func (m *MMClient) Logout() error {
+	m.log.Debugf("logout as %s (team: %s) on %s", m.Credentials.Login, m.Credentials.Team, m.Credentials.Server)
+	m.WsQuit = true
+	m.WsClient.Close()
+	m.WsClient.UnderlyingConn().Close()
+	m.WsClient = nil
+	_, err := m.Client.Logout()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *MMClient) WsReceiver() {
 	var rmsg model.Message
 	for {
@@ -424,20 +437,6 @@ func (m *MMClient) createCookieJar(token string) *cookiejar.Jar {
 	return jar
 }
 
-func (m *MMClient) GetOtherUserDM(channel string) *model.User {
-	m.UpdateUsers()
-	var rcvuser *model.User
-	if strings.Contains(channel, "__") {
-		rcvusers := strings.Split(channel, "__")
-		if rcvusers[0] != m.User.Id {
-			rcvuser = m.Users[rcvusers[0]]
-		} else {
-			rcvuser = m.Users[rcvusers[1]]
-		}
-	}
-	return rcvuser
-}
-
 // SendDirectMessage sends a direct message to specified user
 func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
 	m.log.Debugf("SendDirectMessage to %s, msg %s", toUserId, msg)
@@ -512,6 +511,33 @@ func (m *MMClient) GetTeamFromChannel(channelId string) string {
 		}
 	}
 	return ""
+}
+
+func (m *MMClient) GetLastViewedAt(channelId string) int64 {
+	m.RLock()
+	defer m.RUnlock()
+	for _, t := range m.OtherTeams {
+		if _, ok := t.Channels.Members[channelId]; ok {
+			return t.Channels.Members[channelId].LastViewedAt
+		}
+	}
+	return 0
+}
+
+func (m *MMClient) GetUsers() map[string]*model.User {
+	users := make(map[string]*model.User)
+	m.RLock()
+	defer m.RUnlock()
+	for k, v := range m.Users {
+		users[k] = v
+	}
+	return users
+}
+
+func (m *MMClient) GetUser(userId string) *model.User {
+	m.RLock()
+	defer m.RUnlock()
+	return m.Users[userId]
 }
 
 // initialize user and teams

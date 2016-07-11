@@ -239,21 +239,15 @@ func (m *MMClient) parseMessage(rmsg *Message) {
 func (m *MMClient) parseActionPost(rmsg *Message) {
 	data := model.PostFromJson(strings.NewReader(rmsg.Raw.Props["post"]))
 	// we don't have the user, refresh the userlist
-	if m.Users[data.UserId] == nil {
+	if m.GetUser(data.UserId) == nil {
 		m.UpdateUsers()
 	}
-	rmsg.Username = m.Users[data.UserId].Username
+	rmsg.Username = m.GetUser(data.UserId).Username
 	rmsg.Channel = m.GetChannelName(data.ChannelId)
 	rmsg.Team = m.GetTeamName(rmsg.Raw.TeamId)
 	// direct message
-	if strings.Contains(rmsg.Channel, "__") {
-		//log.Println("direct message")
-		rcvusers := strings.Split(rmsg.Channel, "__")
-		if rcvusers[0] != m.User.Id {
-			rmsg.Channel = m.Users[rcvusers[0]].Username
-		} else {
-			rmsg.Channel = m.Users[rcvusers[1]].Username
-		}
+	if data.Type == "D" {
+		rmsg.Channel = m.GetUser(data.UserId).Username
 	}
 	rmsg.Text = data.Message
 	rmsg.Post = data
